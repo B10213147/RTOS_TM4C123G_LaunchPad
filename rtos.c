@@ -6,6 +6,7 @@
  */
 
 #include "rtos.h"
+#include "rtos_task.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include "hw_memmap.h"
@@ -63,14 +64,28 @@ void sch_on(unsigned int slice){
 	TimerMatchSet(TIMER0_BASE, TIMER_BOTH, slice_quantum);
 
 	//
-	// Enable the timers.
+	// Enable the timers & timer interrupt.
 	//
+	TimerIntEnable(TIMER0_BASE, TIMER_CAPA_MATCH | TIMER_CAPB_MATCH);
 	TimerEnable(TIMER0_BASE, TIMER_BOTH);
 }
 
 // Real time operating system core
 void sch_int(){
-
+	if(sch_tst == task_running) while(1);
+	sch_tst = task_running;
+	TimerIntClear(TIMER0_BASE, TIMER_CAPA_MATCH | TIMER_CAPB_MATCH);
+	TimerMatchSet(TIMER0_BASE, TIMER_BOTH, TimerMatchGet(TIMER0_BASE, TIMER_A) + slice_quantum);
+	if(TimerValueGet(TIMER0_BASE, TIMER_A) - TimerMatchGet(TIMER0_BASE, TIMER_A) > 0){
+		TimerLoadSet(TIMER0_BASE, TIMER_A, TimerMatchGet(TIMER0_BASE, TIMER_A) - slice_quantum);
+	}
+	enable_irq();
+	(*priv_task)();
+	(*(sch_tab[sch_idx]))();
+	sch_idx++;
+	if(sch_idx == sch_tab_size / sizeof(voidfuncptr)) sch_idx = 0;
+	disable_irq();
+	sch_tst = task_completed;
 }
 
 
