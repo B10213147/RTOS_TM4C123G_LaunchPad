@@ -13,13 +13,14 @@ void pulse_train(void);
 
 int frequency = 1;
 float duty = 0.1;
-const int fvpb = 16000000;	//system clock 16MHz
+int fvpb;
 
 int key_last_state = 0;
 int main(void) {
 	startup();
 
 	int key_state;
+	fvpb = SysCtlClockGet();	//system clock 16MHz
 
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0);
 
@@ -97,16 +98,17 @@ void startup(void){
 	}
 
 	//
-	// Configure the two 32-bit periodic timers.
+	// Configure the 32-bit periodic timer.
 	//
 	TimerClockSourceSet(TIMER0_BASE, TIMER_CLOCK_SYSTEM);
-	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
+	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC_UP);
 	TimerIntRegister(TIMER0_BASE, TIMER_BOTH, pulse_train);
 	TimerMatchSet(TIMER0_BASE, TIMER_BOTH, 10);
 
 	//
-	// Enable the timers.
+	// Enable the timer & timer interrupt.
 	//
+	TimerIntEnable(TIMER0_BASE, TIMER_CAPA_MATCH);
 	TimerEnable(TIMER0_BASE, TIMER_BOTH);
 }
 
@@ -119,15 +121,15 @@ void pulse_train(void){
 	nL = (1-duty) * fvpb / frequency;
 
 	if(pin_state == 0){
-		TimerMatchSet(TIMER0_BASE, TIMER_BOTH, nH);
+		TimerMatchSet(TIMER0_BASE, TIMER_A, nH);
 		pin_state = 1;
 	}
 	else{
-		TimerMatchSet(TIMER0_BASE, TIMER_BOTH, nL);
+		TimerMatchSet(TIMER0_BASE, TIMER_A, nL);
 		pin_state = 0;
 	}
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
 
-	TimerIntClear(TIMER0_BASE, TIMER_CAPA_MATCH | TIMER_CAPB_MATCH);
+	TimerIntClear(TIMER0_BASE, TIMER_CAPA_MATCH);
 }
 
