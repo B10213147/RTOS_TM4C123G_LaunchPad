@@ -6,7 +6,6 @@
 #include "hw_memmap.h"
 #include "gpio.h"
 #include "sysctl.h"
-#include "timer.h"
 #include "pwm.h"
 
 void startup(void);
@@ -14,15 +13,12 @@ void pulse_train(void);
 
 int frequency = 1;
 float duty = 0.1;
-int fvpb;
 
 int key_last_state = 0;
 int main(void) {
 	startup();
-	fvpb = SysCtlPWMClockGet();	//system clock 16MHz
-	int key_state;
 
-	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0);
+	int key_state, period, width;
 
 	while(1){
 		key_state = ~(GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_0) | GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_1) |
@@ -54,6 +50,10 @@ int main(void) {
 		}
 
 		key_last_state = key_state;
+		period = SysCtlPWMClockGet() / frequency;
+		width = period * duty;
+		PWMGenPeriodSet(PWM0_BASE, PWM_GEN_0, period);
+		PWMPulseWidthSet(PWM0_BASE, PWM_OUT_0, width);
 	}
 }
 
@@ -68,12 +68,11 @@ void startup(void){
 	// Enable the GPIO port that is used for the on-board LED.
 	//
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 
 	//
 	// Check if the peripheral access is enabled.
 	//
-	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF) || !SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF))
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF))
 	{
 	}
 
@@ -81,13 +80,12 @@ void startup(void){
 	// Enable the GPIO pin for the LED (PF3).  Set the direction as output, and
 	// enable the GPIO pin for digital function.
 	//
-	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
 	GPIOPinTypeGPIOInput(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 
 	//
 	// Enable the peripherals used by this example.
 	//
-	SysCtlPWMClockSet(SYSCTL_PWMDIV_4);	// 16MHz/4 = 4MHz
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
 
 	//
 	// Check if the peripheral access is enabled.
@@ -96,31 +94,14 @@ void startup(void){
 	{
 	}
 
+	SysCtlPWMClockSet(SYSCTL_PWMDIV_4);	// 16MHz/4 = 4MHz
+
 	GPIOPinTypePWM(GPIO_PORTB_BASE, GPIO_PIN_6);
 
 	PWMGenConfigure(PWM0_BASE, PWM_GEN_0, PWM_GEN_MODE_DOWN | PWM_GEN_MODE_NO_SYNC | PWM_GEN_MODE_DBG_STOP);
 
 	PWMGenEnable(PWM0_BASE, PWM_GEN_0);
+	PWMOutputState(PWM0_BASE, PWM_OUT_0_BIT, true);
 }
 
-int pin_state = 0;
-void pulse_train(void){
-	int nH, nL;
-
-	//refresh nH & nL
-	nH = duty * fvpb / frequency;
-	nL = (1-duty) * fvpb / frequency;
-
-	if(pin_state == 0){
-		TimerMatchSet(TIMER0_BASE, TIMER_BOTH, nH);
-		pin_state = 1;
-	}
-	else{
-		TimerMatchSet(TIMER0_BASE, TIMER_BOTH, nL);
-		pin_state = 0;
-	}
-	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
-
-	TimerIntClear(TIMER0_BASE, TIMER_CAPA_MATCH | TIMER_CAPB_MATCH);
-}
 
