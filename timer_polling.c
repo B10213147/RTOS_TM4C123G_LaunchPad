@@ -12,7 +12,7 @@ void startup(void);
 
 int frequency = 1;
 float duty = 0.1;
-const int fvpb = 16000000;	//system clock 16MHz
+int fvpb;
 int key_last_state = 0;
 
 int main(void) {
@@ -21,6 +21,7 @@ int main(void) {
 	int nH, nL, next;
 	int pin_state = 0;
 	int key_state;
+	fvpb = SysCtlClockGet();	//system clock 16MHz
 
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
 	nL = (1-duty) * fvpb / frequency;
@@ -115,13 +116,12 @@ void startup(void){
 	}
 
 	//
-	// Configure the two 32-bit periodic timers.
+	// Configure the 32-bit periodic timer.
 	//
-	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
-	TimerLoadSet(TIMER0_BASE, TIMER_A, SysCtlClockGet());
+	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC_UP);
 
 	//
 	// Enable the timers.
 	//
-	TimerEnable(TIMER0_BASE, TIMER_A);
+	TimerEnable(TIMER0_BASE, TIMER_BOTH);
 }
