@@ -20,9 +20,9 @@ int sch_tst, sch_idx, slice_quantum;
 void enable_irq()
 {
 	asm(" stmfd sp!, {r0}");
-	asm(" mrs   r0, cpsr");
+	asm(" mrs   r0, apsr");
 	asm(" bic   r0, r0, #0x80");
-	asm(" msr   cpsr_c, r0");
+	asm(" msr   apsr_nzcvq, r0");
 	asm(" ldmfd sp!, {r0}");
 }
 
@@ -30,9 +30,9 @@ void enable_irq()
 void disable_irq()
 {
 	asm(" stmfd sp!, {r0}");
-	asm(" mrs   r0, cpsr");
+	asm(" mrs   r0, apsr");
 	asm(" orr   r0, r0, #0x80");
-	asm(" msr   cpsr_c, r0");
+	asm(" msr   apsr_nzcvq, r0");
 	asm(" ldmfd sp!, {r0}");
 }
 
