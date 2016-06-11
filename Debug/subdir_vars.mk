@@ -3,31 +3,31 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-CMD_SRCS += \
-../tm4c123gh6pm.cmd 
+LDS_SRCS += \
+../tm4c123gh6pm.lds 
 
 C_SRCS += \
 ../main.c \
-../tm4c123gh6pm_startup_ccs.c 
+../tm4c123gh6pm_startup_ccs_gcc.c 
 
 OBJS += \
-./main.obj \
-./tm4c123gh6pm_startup_ccs.obj 
+./main.o \
+./tm4c123gh6pm_startup_ccs_gcc.o 
 
 C_DEPS += \
-./main.pp \
-./tm4c123gh6pm_startup_ccs.pp 
+./main.d \
+./tm4c123gh6pm_startup_ccs_gcc.d 
 
 C_DEPS__QUOTED += \
-"main.pp" \
-"tm4c123gh6pm_startup_ccs.pp" 
+"main.d" \
+"tm4c123gh6pm_startup_ccs_gcc.d" 
 
 OBJS__QUOTED += \
-"main.obj" \
-"tm4c123gh6pm_startup_ccs.obj" 
+"main.o" \
+"tm4c123gh6pm_startup_ccs_gcc.o" 
 
 C_SRCS__QUOTED += \
 "../main.c" \
-"../tm4c123gh6pm_startup_ccs.c" 
+"../tm4c123gh6pm_startup_ccs_gcc.c" 
 
 
