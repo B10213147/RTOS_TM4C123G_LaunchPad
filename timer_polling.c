@@ -6,7 +6,6 @@
 #include "inc/hw_memmap.h"
 #include "inc/hw_sysctl.h"
 #include "inc/hw_gpio.h"
-#include "inc/hw_timer.h"
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
@@ -14,19 +13,18 @@
 void startup(void);
 
 int frequency = 1;
-float duty = 0.5;
-int fvpb;
-int key_last_state = 0;
-uint8_t pin_state = 0x00;
+float duty = 0.01;
+uint32_t fvpb;
+int32_t key_last_state = 0;
 
 int main(void) {
 	startup();
 
 	uint32_t nH, nL, next;
-
 	int32_t key_state;
-	//fvpb = SysCtlClockGet()/TimerPrescaleGet(TIMER0_BASE, TIMER_A);	//system clock 16MHz
+	uint8_t pin_state = 0x00;
 	fvpb = SysCtlClockGet();
+
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
 	nL = (1-duty) * fvpb / frequency;
 	next = TimerValueGet(TIMER0_BASE, TIMER_A) + nL;
@@ -50,14 +48,14 @@ int main(void) {
 		nL = (1-duty) * fvpb / frequency;
 
 		key_last_state = key_state;
-		uint32_t temp = TimerValueGet(TIMER0_BASE, TIMER_A)-next;
-		if(temp > 0){
+
+		if(TimerValueGet(TIMER0_BASE, TIMER_A) > next){
 			if(pin_state == 0x00){
-				next = TimerValueGet(TIMER0_BASE, TIMER_A) + nH;
+				next += nH;
 				pin_state = GPIO_PIN_3;
 			}
 			else{
-				next = TimerValueGet(TIMER0_BASE, TIMER_A) + nL;
+				next += nL;
 				pin_state = 0x00;
 			}
 			GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
@@ -98,7 +96,6 @@ void startup(void){
 	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4,
 			GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 
-
 	//
 	// Enable the peripherals used by this example.
 	//
@@ -115,9 +112,7 @@ void startup(void){
 	// Configure the 32-bit periodic timer.
 	//
 	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC_UP);
-	//TimerPrescaleSet(TIMER0_BASE, TIMER_A, 0xA);
 	TimerMatchSet(TIMER0_BASE, TIMER_A, 0xFFFFFFFF);
-
 
 	//
 	// Enable the timers.
