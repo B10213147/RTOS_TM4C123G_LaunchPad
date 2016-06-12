@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lc -lgcc -lnosys
+LIBS := -lc -ldriver -lgcc -lnosys
 

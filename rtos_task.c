@@ -8,8 +8,18 @@
 #include "rtos_task.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include "hw_memmap.h"
-#include "sysctl.h"
-#include "timer.h"
+#include "inc/hw_memmap.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/timer.h"
+
+void empty_task(void);
+voidfuncptr priv_task;
+voidfuncptr sch_tab[] = {empty_task};
+int sch_tab_size;
+
+
+void empty_task(void){
+
+}
 
 
