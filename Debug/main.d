@@ -1,0 +1,9 @@
+main.o: ../main.c C:/ti/TivaWare_C_Series-2.1.2.111/inc/hw_memmap.h \
+ C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/gpio.h \
+ C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/sysctl.h
+
+C:/ti/TivaWare_C_Series-2.1.2.111/inc/hw_memmap.h:
+
+C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/gpio.h:
+
+C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/sysctl.h:
