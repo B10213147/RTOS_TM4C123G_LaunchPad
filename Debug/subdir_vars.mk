@@ -7,27 +7,39 @@ LDS_SRCS += \
 ../tm4c123gh6pm.lds 
 
 C_SRCS += \
-../main.c \
+../rtos.c \
+../rtos_task.c \
+../timer_polling.c \
 ../tm4c123gh6pm_startup_ccs_gcc.c 
 
 OBJS += \
-./main.o \
+./rtos.o \
+./rtos_task.o \
+./timer_polling.o \
 ./tm4c123gh6pm_startup_ccs_gcc.o 
 
 C_DEPS += \
-./main.d \
+./rtos.d \
+./rtos_task.d \
+./timer_polling.d \
 ./tm4c123gh6pm_startup_ccs_gcc.d 
 
 C_DEPS__QUOTED += \
-"main.d" \
+"rtos.d" \
+"rtos_task.d" \
+"timer_polling.d" \
 "tm4c123gh6pm_startup_ccs_gcc.d" 
 
 OBJS__QUOTED += \
-"main.o" \
+"rtos.o" \
+"rtos_task.o" \
+"timer_polling.o" \
 "tm4c123gh6pm_startup_ccs_gcc.o" 
 
 C_SRCS__QUOTED += \
-"../main.c" \
+"../rtos.c" \
+"../rtos_task.c" \
+"../timer_polling.c" \
 "../tm4c123gh6pm_startup_ccs_gcc.c" 
 
 

@@ -10,44 +10,15 @@ GEN_OPTS__FLAG :=
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
-"./main.o" \
+"./rtos.o" \
+"./rtos_task.o" \
+"./timer_polling.o" \
 "./tm4c123gh6pm_startup_ccs_gcc.o" \
-"./driverlib/adc.o" \
-"./driverlib/aes.o" \
-"./driverlib/can.o" \
-"./driverlib/comp.o" \
-"./driverlib/cpu.o" \
-"./driverlib/crc.o" \
-"./driverlib/des.o" \
-"./driverlib/eeprom.o" \
-"./driverlib/emac.o" \
-"./driverlib/epi.o" \
-"./driverlib/flash.o" \
-"./driverlib/fpu.o" \
-"./driverlib/gpio.o" \
-"./driverlib/hibernate.o" \
-"./driverlib/i2c.o" \
-"./driverlib/interrupt.o" \
-"./driverlib/lcd.o" \
-"./driverlib/mpu.o" \
-"./driverlib/onewire.o" \
-"./driverlib/pwm.o" \
-"./driverlib/qei.o" \
-"./driverlib/shamd5.o" \
-"./driverlib/ssi.o" \
-"./driverlib/sw_crc.o" \
-"./driverlib/sysctl.o" \
-"./driverlib/sysexc.o" \
-"./driverlib/systick.o" \
-"./driverlib/timer.o" \
-"./driverlib/uart.o" \
-"./driverlib/udma.o" \
-"./driverlib/usb.o" \
-"./driverlib/watchdog.o" \
 -Wl,-T"../tm4c123gh6pm.lds" \
 $(GEN_CMDS__FLAG) \
 -Wl,--start-group \
 -lc \
+-ldriver \
 -lgcc \
 -lnosys \
 -Wl,--end-group \
@@ -60,9 +31,7 @@ RMDIR := RMDIR /S/Q
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir_vars.mk
--include driverlib/subdir_vars.mk
 -include subdir_rules.mk
--include driverlib/subdir_rules.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -159,40 +128,40 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-test.out \
+timer_polling.out \
 
 EXE_OUTPUTS__QUOTED += \
-"test.out" \
+"timer_polling.out" \
 
 BIN_OUTPUTS += \
-test.hex \
+timer_polling.hex \
 
 BIN_OUTPUTS__QUOTED += \
-"test.hex" \
+"timer_polling.hex" \
 
 
 # All Target
-all: test.out
+all: timer_polling.out
 
 # Tool invocations
-test.out: $(OBJS) $(LDS_SRCS) $(GEN_CMDS)
+timer_polling.out: $(OBJS) $(LDS_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GNU Linker'
-	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-gcc.exe" -march=armv7e-m -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -DPART_TM4C123GH6PM -Dgcc -DTARGET_IS_TM4C123_RB1 -ffunction-sections -fdata-sections -g -gdwarf-3 -gstrict-dwarf -Wall -Wl,-Map,"test.map" -o"test.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-gcc.exe" -march=armv7e-m -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -DPART_TM4C123GH6PM -Dgcc -DTARGET_IS_TM4C123_RB1 -ffunction-sections -fdata-sections -g -gdwarf-3 -gstrict-dwarf -Wall -Wl,-Map,"timer_polling.map" -L"C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/gcc" -o"timer_polling.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-test.hex: $(EXE_OUTPUTS)
+timer_polling.hex: $(EXE_OUTPUTS)
 	@echo 'Invoking: GNU Objcopy Utility'
-	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-objcopy.exe"  $(EXE_OUTPUTS__QUOTED) "test.hex"
+	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-objcopy.exe"  $(EXE_OUTPUTS__QUOTED) "timer_polling.hex"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)$(BIN_OUTPUTS__QUOTED)
-	-$(RM) "main.d" "tm4c123gh6pm_startup_ccs_gcc.d" "driverlib\adc.d" "driverlib\aes.d" "driverlib\can.d" "driverlib\comp.d" "driverlib\cpu.d" "driverlib\crc.d" "driverlib\des.d" "driverlib\eeprom.d" "driverlib\emac.d" "driverlib\epi.d" "driverlib\flash.d" "driverlib\fpu.d" "driverlib\gpio.d" "driverlib\hibernate.d" "driverlib\i2c.d" "driverlib\interrupt.d" "driverlib\lcd.d" "driverlib\mpu.d" "driverlib\onewire.d" "driverlib\pwm.d" "driverlib\qei.d" "driverlib\shamd5.d" "driverlib\ssi.d" "driverlib\sw_crc.d" "driverlib\sysctl.d" "driverlib\sysexc.d" "driverlib\systick.d" "driverlib\timer.d" "driverlib\uart.d" "driverlib\udma.d" "driverlib\usb.d" "driverlib\watchdog.d" 
-	-$(RM) "main.o" "tm4c123gh6pm_startup_ccs_gcc.o" "driverlib\adc.o" "driverlib\aes.o" "driverlib\can.o" "driverlib\comp.o" "driverlib\cpu.o" "driverlib\crc.o" "driverlib\des.o" "driverlib\eeprom.o" "driverlib\emac.o" "driverlib\epi.o" "driverlib\flash.o" "driverlib\fpu.o" "driverlib\gpio.o" "driverlib\hibernate.o" "driverlib\i2c.o" "driverlib\interrupt.o" "driverlib\lcd.o" "driverlib\mpu.o" "driverlib\onewire.o" "driverlib\pwm.o" "driverlib\qei.o" "driverlib\shamd5.o" "driverlib\ssi.o" "driverlib\sw_crc.o" "driverlib\sysctl.o" "driverlib\sysexc.o" "driverlib\systick.o" "driverlib\timer.o" "driverlib\uart.o" "driverlib\udma.o" "driverlib\usb.o" "driverlib\watchdog.o" 
+	-$(RM) "rtos.d" "rtos_task.d" "timer_polling.d" "tm4c123gh6pm_startup_ccs_gcc.d" 
+	-$(RM) "rtos.o" "rtos_task.o" "timer_polling.o" "tm4c123gh6pm_startup_ccs_gcc.o" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

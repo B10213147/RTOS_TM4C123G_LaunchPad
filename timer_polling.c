@@ -3,15 +3,17 @@
  */
 #include <stdint.h>
 #include <stdbool.h>
-#include "hw_memmap.h"
-#include "gpio.h"
-#include "sysctl.h"
-#include "timer.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_sysctl.h"
+#include "inc/hw_gpio.h"
+#include "driverlib/gpio.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/timer.h"
 
 void startup(void);
 
 int frequency = 1;
-float duty = 0.1;
+float duty = 0.001;
 int fvpb;
 int key_last_state = 0;
 
@@ -20,40 +22,26 @@ int main(void) {
 
 	int nH, nL, next;
 	int pin_state = 0;
-	int key_state;
+	int32_t key_state;
 	fvpb = SysCtlClockGet();	//system clock 16MHz
 
-	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
+	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, GPIO_PIN_3);
 	nL = (1-duty) * fvpb / frequency;
 	next = TimerValueGet(TIMER0_BASE, TIMER_A) + nL;
 
 	while(1){
-		key_state = ~(GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_0) | GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_0) |
-				GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_0) | GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_0));
-
+		key_state = ~(GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4));
 		//frequency increase 1Hz
-		if((key_state & GPIO_PIN_0 != 0) && (key_last_state & GPIO_PIN_0 == 0)){
+		if(((key_state & GPIO_PIN_0) != 0) && ((key_last_state & GPIO_PIN_0) == 0)){
 			frequency += 1;
 			if(frequency>10)
 			{frequency = 10;}
 		}
 		//frequency decrease 1Hz
-		if((key_state & GPIO_PIN_1 != 0) && (key_last_state & GPIO_PIN_1 == 0)){
+		if(((key_state & GPIO_PIN_4) != 0) && ((key_last_state & GPIO_PIN_4) == 0)){
 			frequency -= 1;
 			if(frequency<1)
 			{frequency = 1;}
-		}
-		//duty cycle increase 0.1
-		if((key_state & GPIO_PIN_2 != 0) && (key_last_state & GPIO_PIN_2 == 0)){
-			duty += 0.07;
-			if(duty>1)
-			{duty = 0.99;}
-		}
-		//duty cycle decrease 0.1
-		if((key_state & GPIO_PIN_3 != 0) && (key_last_state & GPIO_PIN_3 == 0)){
-			duty -= 0.07;
-			if(duty<0)
-			{duty = 0.01;}
 		}
 		//refresh nH & nL
 		nH = duty * fvpb / frequency;
@@ -62,13 +50,13 @@ int main(void) {
 		key_last_state = key_state;
 
 		if((TimerValueGet(TIMER0_BASE, TIMER_A)-next) > 0){
-			if(pin_state == 0){
+			if(pin_state != GPIO_PIN_3){
 				next += nH;
-				pin_state = 1;
+				pin_state = GPIO_PIN_3;
 			}
 			else{
 				next += nL;
-				pin_state = 0;
+				pin_state = ~GPIO_PIN_3;
 			}
 			GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
 		}
@@ -85,13 +73,12 @@ void startup(void){
 	//
 	// Enable the GPIO port that is used for the on-board LED.
 	//
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 
 	//
 	// Check if the peripheral access is enabled.
 	//
-	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF) || !SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF))
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF))
 	{
 	}
 
@@ -99,8 +86,14 @@ void startup(void){
 	// Enable the GPIO pin for the LED (PF3).  Set the direction as output, and
 	// enable the GPIO pin for digital function.
 	//
+	*((volatile uint32_t *)SYSCTL_RCGCGPIO) = 0x20;
+	*((volatile uint32_t *)(GPIO_PORTF_BASE + GPIO_O_LOCK)) = 0x4C4F434B;
+	*((volatile uint32_t *)(GPIO_PORTF_BASE + GPIO_O_CR)) = 0x1F;
+
 	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
-	GPIOPinTypeGPIOInput(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
+	GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4);
+	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4,
+			GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 
 
 	//

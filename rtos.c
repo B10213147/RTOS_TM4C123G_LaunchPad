@@ -9,9 +9,9 @@
 #include "rtos_task.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include "hw_memmap.h"
-#include "sysctl.h"
-#include "timer.h"
+#include "inc/hw_memmap.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/timer.h"
 
 // System variables
 int sch_tst, sch_idx, slice_quantum;
@@ -19,21 +19,21 @@ int sch_tst, sch_idx, slice_quantum;
 // Enable IRQ interrupts
 void enable_irq()
 {
-	asm(" stmfd sp!, {r0}");
-	asm(" mrs   r0, apsr");
-	asm(" bic   r0, r0, #0x80");
-	asm(" msr   apsr_nzcvq, r0");
-	asm(" ldmfd sp!, {r0}");
+	__asm(" stmfd sp!, {r0}");
+	__asm(" mrs   r0, apsr");
+	__asm(" bic   r0, r0, #0x80");
+	__asm(" msr   apsr_nzcvq, r0");
+	__asm(" ldmfd sp!, {r0}");
 }
 
 // Disable IRQ interrupts
 void disable_irq()
 {
-	asm(" stmfd sp!, {r0}");
-	asm(" mrs   r0, apsr");
-	asm(" orr   r0, r0, #0x80");
-	asm(" msr   apsr_nzcvq, r0");
-	asm(" ldmfd sp!, {r0}");
+	__asm(" stmfd sp!, {r0}");
+	__asm(" mrs   r0, apsr");
+	__asm(" orr   r0, r0, #0x80");
+	__asm(" msr   apsr_nzcvq, r0");
+	__asm(" ldmfd sp!, {r0}");
 }
 
 // Start real time operating system
