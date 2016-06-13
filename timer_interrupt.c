@@ -9,9 +9,9 @@
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
+#include "pulse_train.h"
 
 void startup(void);
-void pulse_train(void);
 
 int frequency = 1;
 float duty = 0.01;
@@ -90,7 +90,7 @@ void startup(void){
 	//
 	// Configure the 32-bit periodic timer.
 	//
-	TimerConfigure(TIMER0_BASE, TIMER_CFG_ONE_SHOT);
+	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
 	TimerIntRegister(TIMER0_BASE, TIMER_A, pulse_train);
 	TimerLoadSet(TIMER0_BASE, TIMER_A, 10);
 
@@ -101,24 +101,5 @@ void startup(void){
 	TimerEnable(TIMER0_BASE, TIMER_A);
 }
 
-uint8_t pin_state = 0x00;
-void pulse_train(void){
-	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
-	//refresh nH & nL
-	uint32_t nH = duty * fvpb / frequency;
-	uint32_t nL = (1-duty) * fvpb / frequency;
-
-	if(pin_state == 0){
-		TimerLoadSet(TIMER0_BASE, TIMER_A, nH);
-		pin_state = GPIO_PIN_3;
-	}
-	else{
-		TimerLoadSet(TIMER0_BASE, TIMER_A, nL);
-		pin_state = 0x00;
-	}
-	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
-
-	TimerEnable(TIMER0_BASE, TIMER_A);
-}
 
