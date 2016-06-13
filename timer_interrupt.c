@@ -3,54 +3,38 @@
  */
 #include <stdint.h>
 #include <stdbool.h>
-#include "hw_memmap.h"
-#include "gpio.h"
-#include "sysctl.h"
-#include "timer.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_sysctl.h"
+#include "inc/hw_gpio.h"
+#include "driverlib/gpio.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/timer.h"
 
 void startup(void);
 void pulse_train(void);
 
 int frequency = 1;
-float duty = 0.1;
-int fvpb;
+float duty = 0.01;
+uint32_t fvpb;
 
-int key_last_state = 0;
+int32_t key_last_state = 0;
 int main(void) {
 	startup();
 
-	int key_state;
-	fvpb = SysCtlClockGet();	//system clock 16MHz
-
-	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0);
-
 	while(1){
-		key_state = ~(GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_0) | GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_1) |
-				GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_2) | GPIOPinRead(GPIO_PORTB_BASE, GPIO_PIN_3));
+		int32_t key_state = ~GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4);
 
 		//frequency increase 1Hz
-		if((key_state & GPIO_PIN_0 != 0) && (key_last_state & GPIO_PIN_0 == 0)){
+		if(((key_state & GPIO_PIN_0) != 0) && ((key_last_state & GPIO_PIN_0) == 0)){
 			frequency += 1;
 			if(frequency>10)
 			{frequency = 10;}
 		}
 		//frequency decrease 1Hz
-		if((key_state & GPIO_PIN_1 != 0) && (key_last_state & GPIO_PIN_1 == 0)){
+		if(((key_state & GPIO_PIN_4) != 0) && ((key_last_state & GPIO_PIN_4) == 0)){
 			frequency -= 1;
 			if(frequency<1)
 			{frequency = 1;}
-		}
-		//duty cycle increase 0.1
-		if((key_state & GPIO_PIN_2 != 0) && (key_last_state & GPIO_PIN_2 == 0)){
-			duty += 0.07;
-			if(duty>1)
-			{duty = 0.99;}
-		}
-		//duty cycle decrease 0.1
-		if((key_state & GPIO_PIN_3 != 0) && (key_last_state & GPIO_PIN_3 == 0)){
-			duty -= 0.07;
-			if(duty<0)
-			{duty = 0.01;}
 		}
 
 		key_last_state = key_state;
@@ -64,16 +48,17 @@ void startup(void){
 	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
 			SYSCTL_XTAL_16MHZ);
 
+	fvpb = SysCtlClockGet();	//system clock 16MHz
+
 	//
 	// Enable the GPIO port that is used for the on-board LED.
 	//
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 
 	//
 	// Check if the peripheral access is enabled.
 	//
-	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF) || !SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF))
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOF))
 	{
 	}
 
@@ -81,9 +66,14 @@ void startup(void){
 	// Enable the GPIO pin for the LED (PF3).  Set the direction as output, and
 	// enable the GPIO pin for digital function.
 	//
-	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
-	GPIOPinTypeGPIOInput(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
+	*((volatile uint32_t *)SYSCTL_RCGCGPIO) = 0x20;
+	*((volatile uint32_t *)(GPIO_PORTF_BASE + GPIO_O_LOCK)) = 0x4C4F434B;
+	*((volatile uint32_t *)(GPIO_PORTF_BASE + GPIO_O_CR)) = 0x1F;
 
+	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
+	GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4);
+	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4,
+			GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 
 	//
 	// Enable the peripherals used by this example.
@@ -100,36 +90,35 @@ void startup(void){
 	//
 	// Configure the 32-bit periodic timer.
 	//
-	TimerClockSourceSet(TIMER0_BASE, TIMER_CLOCK_SYSTEM);
-	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC_UP);
-	TimerIntRegister(TIMER0_BASE, TIMER_BOTH, pulse_train);
-	TimerMatchSet(TIMER0_BASE, TIMER_BOTH, 10);
+	TimerConfigure(TIMER0_BASE, TIMER_CFG_ONE_SHOT);
+	TimerIntRegister(TIMER0_BASE, TIMER_A, pulse_train);
+	TimerLoadSet(TIMER0_BASE, TIMER_A, 10);
 
 	//
 	// Enable the timer & timer interrupt.
 	//
-	TimerIntEnable(TIMER0_BASE, TIMER_CAPA_MATCH);
-	TimerEnable(TIMER0_BASE, TIMER_BOTH);
+	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	TimerEnable(TIMER0_BASE, TIMER_A);
 }
 
-int pin_state = 0;
+uint8_t pin_state = 0x00;
 void pulse_train(void){
-	int nH, nL;
+	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
 	//refresh nH & nL
-	nH = duty * fvpb / frequency;
-	nL = (1-duty) * fvpb / frequency;
+	uint32_t nH = duty * fvpb / frequency;
+	uint32_t nL = (1-duty) * fvpb / frequency;
 
 	if(pin_state == 0){
-		TimerMatchSet(TIMER0_BASE, TIMER_A, nH);
-		pin_state = 1;
+		TimerLoadSet(TIMER0_BASE, TIMER_A, nH);
+		pin_state = GPIO_PIN_3;
 	}
 	else{
-		TimerMatchSet(TIMER0_BASE, TIMER_A, nL);
-		pin_state = 0;
+		TimerLoadSet(TIMER0_BASE, TIMER_A, nL);
+		pin_state = 0x00;
 	}
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
 
-	TimerIntClear(TIMER0_BASE, TIMER_CAPA_MATCH);
+	TimerEnable(TIMER0_BASE, TIMER_A);
 }
 
