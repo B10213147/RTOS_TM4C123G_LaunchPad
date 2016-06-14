@@ -2,7 +2,7 @@
  * rtos_task.c
  *
  *  Created on: May 13, 2016
- *      Author: USER
+ *      Author: Harvard Tseng
  */
 
 #include "rtos_task.h"
@@ -11,15 +11,11 @@
 #include "inc/hw_memmap.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
-
-void empty_task(void);
-voidfuncptr priv_task;
-voidfuncptr sch_tab[] = {empty_task};
-int sch_tab_size;
-
+#include "pulse_train.h"
 
 void empty_task(void){
-
 }
 
-
+voidfuncptr priv_task = empty_task;
+voidfuncptr sch_tab[] = {empty_task, pulse_train};
+int sch_tab_size = sizeof(sch_tab);

@@ -7,14 +7,13 @@
 
 #include "rtos.h"
 #include "rtos_task.h"
-#include <stdint.h>
-#include <stdbool.h>
 #include "inc/hw_memmap.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 
 // System variables
-int sch_tst, sch_idx, slice_quantum;
+uint8_t sch_tst, sch_idx;
+uint32_t slice_quantum;
 
 // Enable IRQ interrupts
 void enable_irq()
@@ -36,12 +35,27 @@ void disable_irq()
 	__asm(" ldmfd sp!, {r0}");
 }
 
+// Real time operating system core
+void sch_int(void){
+	if(sch_tst == task_running) while(1);
+	sch_tst = task_running;
+	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+
+//	enable_irq();
+//	(*priv_task)();
+	(*(sch_tab[sch_idx]))();
+	sch_idx++;
+	if(sch_idx == sch_tab_size / sizeof(voidfuncptr)) sch_idx = 0;
+//	disable_irq();
+	sch_tst = task_completed;
+}
+
 // Start real time operating system
 // slice ... timeslice in microseconds
-void sch_on(unsigned int slice){
+void sch_on(uint32_t slice){
 	sch_tst = task_completed;
 	sch_idx = 0;
-	slice_quantum = slice;
+	slice_quantum = slice * (SysCtlClockGet() / 1000000);
 
 	//
 	// Enable the peripherals used by this example.
@@ -56,38 +70,15 @@ void sch_on(unsigned int slice){
 	}
 
 	//
-	// Configure the two 32-bit periodic timers.
+	// Configure the 32-bit periodic timer.
 	//
-	TimerClockSourceSet(TIMER0_BASE, TIMER_CLOCK_SYSTEM);
 	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
-	TimerIntRegister(TIMER0_BASE, TIMER_BOTH, sch_int);
-	TimerMatchSet(TIMER0_BASE, TIMER_BOTH, slice_quantum);
+	TimerIntRegister(TIMER0_BASE, TIMER_A, sch_int);
+	TimerLoadSet(TIMER0_BASE, TIMER_A, slice_quantum);
 
 	//
-	// Enable the timers & timer interrupt.
+	// Enable the timer & timer interrupt.
 	//
-	TimerIntEnable(TIMER0_BASE, TIMER_CAPA_MATCH | TIMER_CAPB_MATCH);
-	TimerEnable(TIMER0_BASE, TIMER_BOTH);
+	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	TimerEnable(TIMER0_BASE, TIMER_A);
 }
-
-// Real time operating system core
-void sch_int(){
-	if(sch_tst == task_running) while(1);
-	sch_tst = task_running;
-	TimerIntClear(TIMER0_BASE, TIMER_CAPA_MATCH | TIMER_CAPB_MATCH);
-	TimerMatchSet(TIMER0_BASE, TIMER_BOTH, TimerMatchGet(TIMER0_BASE, TIMER_A) + slice_quantum);
-	if(TimerValueGet(TIMER0_BASE, TIMER_A) - TimerMatchGet(TIMER0_BASE, TIMER_A) > 0){
-		TimerLoadSet(TIMER0_BASE, TIMER_A, TimerMatchGet(TIMER0_BASE, TIMER_A) - slice_quantum);
-	}
-	enable_irq();
-	(*priv_task)();
-	(*(sch_tab[sch_idx]))();
-	sch_idx++;
-	if(sch_idx == sch_tab_size / sizeof(voidfuncptr)) sch_idx = 0;
-	disable_irq();
-	sch_tst = task_completed;
-}
-
-
-
-
