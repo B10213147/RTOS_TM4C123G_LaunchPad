@@ -19,9 +19,9 @@ uint32_t slice_quantum;
 void enable_irq()
 {
 	__asm(" stmfd sp!, {r0}");
-	__asm(" mrs   r0, apsr");
-	__asm(" bic   r0, r0, #0x80");
-	__asm(" msr   apsr_nzcvq, r0");
+	__asm(" mrs   r0, primask");
+	__asm(" bic   r0, r0, #0x1");
+	__asm(" msr   primask, r0");
 	__asm(" ldmfd sp!, {r0}");
 }
 
@@ -29,9 +29,9 @@ void enable_irq()
 void disable_irq()
 {
 	__asm(" stmfd sp!, {r0}");
-	__asm(" mrs   r0, apsr");
-	__asm(" orr   r0, r0, #0x80");
-	__asm(" msr   apsr_nzcvq, r0");
+	__asm(" mrs   r0, primask");
+	__asm(" orr   r0, r0, #0x1");
+	__asm(" msr   primask, r0");
 	__asm(" ldmfd sp!, {r0}");
 }
 
@@ -41,12 +41,12 @@ void sch_int(void){
 	sch_tst = task_running;
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
-//	enable_irq();
+	disable_irq();
 //	(*priv_task)();
 	(*(sch_tab[sch_idx]))();
 	sch_idx++;
 	if(sch_idx == sch_tab_size / sizeof(voidfuncptr)) sch_idx = 0;
-//	disable_irq();
+	enable_irq();
 	sch_tst = task_completed;
 }
 
