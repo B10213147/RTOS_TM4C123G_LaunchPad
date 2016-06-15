@@ -7,7 +7,7 @@
 
 #include "rtos.h"
 #include "rtos_task.h"
-#include "inc/hw_memmap.h"
+#include "TM4C123GH6PM.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 
@@ -15,38 +15,19 @@
 uint8_t sch_tst, sch_idx;
 uint32_t slice_quantum;
 
-// Enable IRQ interrupts
-void enable_irq()
-{
-	__asm(" stmfd sp!, {r0}");
-	__asm(" mrs   r0, primask");
-	__asm(" bic   r0, r0, #0x1");
-	__asm(" msr   primask, r0");
-	__asm(" ldmfd sp!, {r0}");
-}
-
-// Disable IRQ interrupts
-void disable_irq()
-{
-	__asm(" stmfd sp!, {r0}");
-	__asm(" mrs   r0, primask");
-	__asm(" orr   r0, r0, #0x1");
-	__asm(" msr   primask, r0");
-	__asm(" ldmfd sp!, {r0}");
-}
-
 // Real time operating system core
 void sch_int(void){
 	if(sch_tst == task_running) while(1);
-	sch_tst = task_running;
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	sch_tst = task_running;
 
-	disable_irq();
+	__disable_irq();
 //	(*priv_task)();
 	(*(sch_tab[sch_idx]))();
 	sch_idx++;
 	if(sch_idx == sch_tab_size / sizeof(voidfuncptr)) sch_idx = 0;
-	enable_irq();
+	__enable_irq();
+
 	sch_tst = task_completed;
 }
 

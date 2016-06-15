@@ -3,7 +3,7 @@
  */
 #include <stdint.h>
 #include <stdbool.h>
-#include "inc/hw_memmap.h"
+#include "TM4C123GH6PM.h"
 #include "inc/hw_sysctl.h"
 #include "inc/hw_gpio.h"
 #include "driverlib/gpio.h"
@@ -45,11 +45,11 @@ void startup(void){
 	// enable the GPIO pin for digital function.
 	//
 	*((volatile uint32_t *)SYSCTL_RCGCGPIO) = 0x20;
-	*((volatile uint32_t *)(GPIO_PORTF_BASE + GPIO_O_LOCK)) = 0x4C4F434B;
-	*((volatile uint32_t *)(GPIO_PORTF_BASE + GPIO_O_CR)) = 0x1F;
+	*((volatile uint32_t *)(GPIOF_BASE + GPIO_O_LOCK)) = 0x4C4F434B;
+	*((volatile uint32_t *)(GPIOF_BASE + GPIO_O_CR)) = 0x1F;
 
-	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
-	GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4);
-	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_0 | GPIO_PIN_4,
+	GPIOPinTypeGPIOOutput(GPIOF_BASE, GPIO_PIN_3);
+	GPIOPinTypeGPIOInput(GPIOF_BASE, GPIO_PIN_0 | GPIO_PIN_4);
+	GPIOPadConfigSet(GPIOF_BASE, GPIO_PIN_0 | GPIO_PIN_4,
 			GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 }
