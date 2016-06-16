@@ -4,11 +4,12 @@
 	<deviceVariant value="Cortex M.TM4C123GH6PM"/>
 	<deviceFamily value="TMS470"/>
 	<deviceEndianness value="little"/>
-	<codegenToolVersion value="5.2.7"/>
+	<codegenToolVersion value="GNU_4.9.3:Linaro"/>
 	<isElfFormat value="true"/>
-	<linkerCommandFile value="tm4c123gh6pm.cmd"/>
+	<linkerCommandFile value="tm4c123gh6pm.lds"/>
 	<rts value="libc.a"/>
 	<createSlaveProjects value=""/>
-	<templateProperties value="id=com.ti.common.project.core.emptyProjectWithMainTemplate,"/>
+	<templateProperties value="id=com.ti.common.project.core.emptyProjectWithMainTemplate_gnu_arm,"/>
+	<filesToOpen value="main.c,"/>
 	<isTargetManual value="false"/>
 </projectOptions>

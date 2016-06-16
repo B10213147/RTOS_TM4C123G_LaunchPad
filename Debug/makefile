@@ -4,18 +4,24 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7
+CG_TOOL_ROOT := C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3
 
 GEN_OPTS__FLAG := 
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
-"./main.obj" \
-"./tm4c123gh6pm_startup_ccs.obj" \
-"../tm4c123gh6pm.cmd" \
+"./rtos.o" \
+"./rtos_task.o" \
+"./timer_polling.o" \
+"./tm4c123gh6pm_startup_ccs_gcc.o" \
+-Wl,-T"../tm4c123gh6pm.lds" \
 $(GEN_CMDS__FLAG) \
--l"libc.a" \
--l"C:\ti\TivaWare_C_Series-2.1.2.111\driverlib\ccs\Debug\driverlib.lib" \
+-Wl,--start-group \
+-lc \
+-ldriver \
+-lgcc \
+-lnosys \
+-Wl,--end-group \
 
 -include ../makefile.init
 
@@ -46,6 +52,9 @@ ifneq ($(strip $(ASM_DEPS)),)
 endif
 ifneq ($(strip $(CC_DEPS)),)
 -include $(CC_DEPS)
+endif
+ifneq ($(strip $(SV7A_DEPS)),)
+-include $(SV7A_DEPS)
 endif
 ifneq ($(strip $(S55_DEPS)),)
 -include $(S55_DEPS)
@@ -119,40 +128,40 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-RTOS_TM4C123G_LaunchPad.out \
+timer_polling.out \
 
 EXE_OUTPUTS__QUOTED += \
-"RTOS_TM4C123G_LaunchPad.out" \
+"timer_polling.out" \
 
 BIN_OUTPUTS += \
-RTOS_TM4C123G_LaunchPad.hex \
+timer_polling.hex \
 
 BIN_OUTPUTS__QUOTED += \
-"RTOS_TM4C123G_LaunchPad.hex" \
+"timer_polling.hex" \
 
 
 # All Target
-all: RTOS_TM4C123G_LaunchPad.out
+all: timer_polling.out
 
 # Tool invocations
-RTOS_TM4C123G_LaunchPad.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
+timer_polling.out: $(OBJS) $(LDS_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
-	@echo 'Invoking: ARM Linker'
-	"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --gcc --define=ccs="ccs" --define=PART_TM4C123GH6PM --diag_wrap=off --display_error_number --diag_warning=225 -z -m"RTOS_TM4C123G_LaunchPad.map" --heap_size=0 --stack_size=512 -i"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/lib" -i"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include" --reread_libs --display_error_number --diag_wrap=off --warn_sections --xml_link_info="RTOS_TM4C123G_LaunchPad_linkInfo.xml" --rom_model -o "RTOS_TM4C123G_LaunchPad.out" $(ORDERED_OBJS)
+	@echo 'Invoking: GNU Linker'
+	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-gcc.exe" -march=armv7e-m -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -DPART_TM4C123GH6PM -Dgcc -DTARGET_IS_TM4C123_RB1 -ffunction-sections -fdata-sections -g -gdwarf-3 -gstrict-dwarf -Wall -Wl,-Map,"timer_polling.map" -L"C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/gcc" -o"timer_polling.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-RTOS_TM4C123G_LaunchPad.hex: $(EXE_OUTPUTS)
-	@echo 'Invoking: ARM Hex Utility'
-	"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/bin/armhex"  -o "RTOS_TM4C123G_LaunchPad.hex" $(EXE_OUTPUTS__QUOTED)
+timer_polling.hex: $(EXE_OUTPUTS)
+	@echo 'Invoking: GNU Objcopy Utility'
+	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-objcopy.exe"  $(EXE_OUTPUTS__QUOTED) "timer_polling.hex"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)$(BIN_OUTPUTS__QUOTED)
-	-$(RM) "main.pp" "tm4c123gh6pm_startup_ccs.pp" 
-	-$(RM) "main.obj" "tm4c123gh6pm_startup_ccs.obj" 
+	-$(RM) "rtos.d" "rtos_task.d" "timer_polling.d" "tm4c123gh6pm_startup_ccs_gcc.d" 
+	-$(RM) "rtos.o" "rtos_task.o" "timer_polling.o" "tm4c123gh6pm_startup_ccs_gcc.o" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
