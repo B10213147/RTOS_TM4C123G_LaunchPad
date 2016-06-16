@@ -8,8 +8,10 @@
 #include "rtos.h"
 #include "rtos_task.h"
 #include "TM4C123GH6PM.h"
+#include "inc/hw_ints.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
+#include "driverlib/interrupt.h"
 
 // System variables
 uint8_t sch_tst, sch_idx;
@@ -21,12 +23,12 @@ void sch_int(void){
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 	sch_tst = task_running;
 
-	__disable_irq();
+	IntPriorityMaskSet(0x00);	//0 means no effect
 //	(*priv_task)();
 	(*(sch_tab[sch_idx]))();
 	sch_idx++;
 	if(sch_idx == sch_tab_size / sizeof(voidfuncptr)) sch_idx = 0;
-	__enable_irq();
+	IntPriorityMaskSet(0x20);	//only looks at the upper 3 bits
 
 	sch_tst = task_completed;
 }
@@ -55,6 +57,7 @@ void sch_on(uint32_t slice){
 	//
 	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
 	TimerIntRegister(TIMER0_BASE, TIMER_A, sch_int);
+	IntPrioritySet(INT_TIMER0A, 0x00);	//set Timer0A to the highest priority
 	TimerLoadSet(TIMER0_BASE, TIMER_A, slice_quantum);
 
 	//
