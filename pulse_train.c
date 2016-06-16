@@ -13,9 +13,9 @@
 #include "driverlib/gpio.h"
 #include "driverlib/timer.h"
 
-extern int frequency;
-extern float duty;
-extern uint32_t fvpb;
+int frequency;
+float duty;
+uint32_t fvpb, next;
 
 uint8_t pin_state = 0x00;
 void pulse_train(void){
@@ -23,17 +23,15 @@ void pulse_train(void){
 	uint32_t nH = duty * fvpb / frequency;
 	uint32_t nL = (1-duty) * fvpb / frequency;
 
-	if(pin_state == 0){
-		TimerLoadSet(TIMER0_BASE, TIMER_A, nH);
+	if(pin_state == 0x00){
+//		next += nH;
 		pin_state = GPIO_PIN_3;
 	}
 	else{
-		TimerLoadSet(TIMER0_BASE, TIMER_A, nL);
+//		next += nL;
 		pin_state = 0x00;
 	}
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
-
-	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 }
 
 
