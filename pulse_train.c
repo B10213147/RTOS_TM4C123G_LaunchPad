@@ -16,8 +16,9 @@
 
 #define disable  0
 #define enable  1
+#define delay 2
 
-char frequency[10] = {'9', '1', '5', '2'};
+char frequency[10] = {'9', '1', '4', '2'};
 struct rtos_pipe pulse_Fifo = {0, 4, 10, frequency};
 
 uint8_t pin_state = 0x00;
@@ -27,17 +28,26 @@ char latch;
 int output = disable;
 int finish = 0;
 void pulse_train(void){
-	if(output != enable){
+	if(output == delay){	//delay 1s
+		count++;
+		if(count == period){
+			output = disable;
+		}
+	}
+
+	if(output == disable){
+		count = 0;
+		finish = 0;
+
 		if(rtos_pipe_read(&pulse_Fifo, &latch, 1)){
 			output = enable;
-			count++;
 		}
 		else{
 			output = disable;
 		}
-		finish = 0;
 	}
-	else{
+
+	if(output == enable){
 		count++;
 		if(count >= period/(latch-48)){
 			if(pin_state == 0x00){
@@ -48,13 +58,11 @@ void pulse_train(void){
 				finish++;
 				count = 0;
 			}
+
 			GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
 
-			if(finish != latch-48){
-				output = enable;
-			}
-			else{
-				output = disable;
+			if(finish == latch-48){
+				output = delay;
 			}
 		}
 	}
