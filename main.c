@@ -15,7 +15,7 @@ void startup(void);
 
 int main(void) {
 	startup();
-	sch_on(250000);
+	sch_on(1000);	//slice = 1000us
 
 	while(1){
 	}

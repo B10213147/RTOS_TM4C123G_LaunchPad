@@ -12,26 +12,50 @@
 #include "inc/hw_memmap.h"
 #include "driverlib/gpio.h"
 #include "driverlib/timer.h"
+#include "rtos_pipe.h"
 
-int frequency;
-float duty;
-uint32_t fvpb, next;
+#define disable  0
+#define enable  1
+
+char frequency[10] = {'9', '1', '5', '2'};
+struct rtos_pipe pulse_Fifo = {0, 4, 10, frequency};
 
 uint8_t pin_state = 0x00;
+int count = 0;
+const uint32_t period = 1000;	//unit = ms
+char latch;
+int output = disable;
+int finish = 0;
 void pulse_train(void){
-	//refresh nH & nL
-	uint32_t nH = duty * fvpb / frequency;
-	uint32_t nL = (1-duty) * fvpb / frequency;
-
-	if(pin_state == 0x00){
-//		next += nH;
-		pin_state = GPIO_PIN_3;
+	if(output != enable){
+		if(rtos_pipe_read(&pulse_Fifo, &latch, 1)){
+			output = enable;
+			count++;
+		}
+		else{
+			output = disable;
+		}
+		finish = 0;
 	}
 	else{
-//		next += nL;
-		pin_state = 0x00;
+		count++;
+		if(count >= period/(latch-48)){
+			if(pin_state == 0x00){
+				pin_state = GPIO_PIN_3;
+			}
+			else{
+				pin_state = 0x00;
+				finish++;
+				count = 0;
+			}
+			GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
+
+			if(finish != latch-48){
+				output = enable;
+			}
+			else{
+				output = disable;
+			}
+		}
 	}
-	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
 }
-
-

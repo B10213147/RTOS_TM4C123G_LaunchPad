@@ -17,5 +17,5 @@ void empty_task(void){
 }
 
 voidfuncptr priv_task = empty_task;
-voidfuncptr sch_tab[] = {empty_task, pulse_train};
+voidfuncptr sch_tab[] = {pulse_train};
 int sch_tab_size = sizeof(sch_tab);
