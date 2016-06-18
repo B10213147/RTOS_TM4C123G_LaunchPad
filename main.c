@@ -10,14 +10,21 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 #include "rtos.h"
+#include "rtos_pipe.h"
 
 void startup(void);
+extern struct rtos_pipe keys_Fifo;
+extern struct rtos_pipe pulse_Fifo;
 
 int main(void) {
 	startup();
-	sch_on(250000);
+	sch_on(1000/4);	//slice = 1000us
 
+	char temp;
 	while(1){
+		if(rtos_pipe_read(&keys_Fifo, &temp, 1)){
+			rtos_pipe_write(&pulse_Fifo, &temp, 1);
+		}
 	}
 }
 

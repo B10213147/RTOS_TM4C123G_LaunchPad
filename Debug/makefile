@@ -10,9 +10,11 @@ GEN_OPTS__FLAG :=
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
+"./main.o" \
+"./pulse_train.o" \
 "./rtos.o" \
 "./rtos_task.o" \
-"./timer_polling.o" \
+"./system_TM4C123.o" \
 "./tm4c123gh6pm_startup_ccs_gcc.o" \
 -Wl,-T"../tm4c123gh6pm.lds" \
 $(GEN_CMDS__FLAG) \
@@ -128,40 +130,40 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-timer_polling.out \
+__rtos.out \
 
 EXE_OUTPUTS__QUOTED += \
-"timer_polling.out" \
+"__rtos.out" \
 
 BIN_OUTPUTS += \
-timer_polling.hex \
+__rtos.hex \
 
 BIN_OUTPUTS__QUOTED += \
-"timer_polling.hex" \
+"__rtos.hex" \
 
 
 # All Target
-all: timer_polling.out
+all: __rtos.out
 
 # Tool invocations
-timer_polling.out: $(OBJS) $(LDS_SRCS) $(GEN_CMDS)
+__rtos.out: $(OBJS) $(LDS_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GNU Linker'
-	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-gcc.exe" -march=armv7e-m -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -DPART_TM4C123GH6PM -Dgcc -DTARGET_IS_TM4C123_RB1 -ffunction-sections -fdata-sections -g -gdwarf-3 -gstrict-dwarf -Wall -Wl,-Map,"timer_polling.map" -L"C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/gcc" -o"timer_polling.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-gcc.exe" -march=armv7e-m -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -DTM4C123GH6PM -DPART_TM4C123GH6PM -Dgcc -ffunction-sections -fdata-sections -g -gdwarf-3 -gstrict-dwarf -Wall -Wl,-Map,"__rtos.map" -L"C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/gcc" -o"__rtos.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-timer_polling.hex: $(EXE_OUTPUTS)
+__rtos.hex: $(EXE_OUTPUTS)
 	@echo 'Invoking: GNU Objcopy Utility'
-	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-objcopy.exe"  $(EXE_OUTPUTS__QUOTED) "timer_polling.hex"
+	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-objcopy.exe"  $(EXE_OUTPUTS__QUOTED) "__rtos.hex"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)$(BIN_OUTPUTS__QUOTED)
-	-$(RM) "rtos.d" "rtos_task.d" "timer_polling.d" "tm4c123gh6pm_startup_ccs_gcc.d" 
-	-$(RM) "rtos.o" "rtos_task.o" "timer_polling.o" "tm4c123gh6pm_startup_ccs_gcc.o" 
+	-$(RM) "main.d" "pulse_train.d" "rtos.d" "rtos_task.d" "system_TM4C123.d" "tm4c123gh6pm_startup_ccs_gcc.d" 
+	-$(RM) "main.o" "pulse_train.o" "rtos.o" "rtos_task.o" "system_TM4C123.o" "tm4c123gh6pm_startup_ccs_gcc.o" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

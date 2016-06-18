@@ -1,1 +1,1 @@
-"./rtos.o" "./rtos_task.o" "./timer_polling.o" "./tm4c123gh6pm_startup_ccs_gcc.o" -Wl,-T"../tm4c123gh6pm.lds" -Wl,--start-group -lc -ldriver -lgcc -lnosys -Wl,--end-group 
+"./main.o" "./pulse_train.o" "./rtos.o" "./rtos_task.o" "./system_TM4C123.o" "./tm4c123gh6pm_startup_ccs_gcc.o" -Wl,-T"../tm4c123gh6pm.lds" -Wl,--start-group -lc -ldriver -lgcc -lnosys -Wl,--end-group 
