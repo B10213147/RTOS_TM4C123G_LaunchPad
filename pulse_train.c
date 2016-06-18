@@ -18,8 +18,8 @@
 #define enable  1
 #define delay 2
 
-char frequency[10] = {'9', '1', '4', '2'};
-struct rtos_pipe pulse_Fifo = {0, 4, 10, frequency};
+char frequency[10];
+struct rtos_pipe pulse_Fifo = {0, 0, 10, frequency};
 
 uint8_t pin_state = 0x00;
 int count = 0;
