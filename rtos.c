@@ -22,20 +22,21 @@ void enable_os(void){
 }
 
 void disable_os(void){
-	//	IntPriorityMaskSet(0x20);	//only looks at the upper 3 bits
+	IntMasterDisable();
 	TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 	rtos_recursive_counter--;
-	//	IntPriorityMaskSet(0x00);	//0 means no effect
+	IntMasterEnable();
 }
 
 // Real time operating system core
 void rtos_Timer0_irq(void){
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 	rtos_recursive_counter--;
-//	IntPriorityMaskSet(0x00);	//0 means no effect
+	IntPriorityMaskSet(0x00);	//0 means no effect
+
 	rtos_sched();
 
-//	IntPriorityMaskSet(0x20);	//only looks at the upper 3 bits
+	IntPriorityMaskSet(0x20);	//only looks at the upper 3 bits
 	enable_os();
 }
 

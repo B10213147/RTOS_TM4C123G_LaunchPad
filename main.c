@@ -3,7 +3,6 @@
  */
 #include "rtos.h"
 #include "TM4C123GH6PM.h"
-#include "inc/hw_sysctl.h"
 #include "inc/hw_gpio.h"
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
@@ -49,7 +48,7 @@ void startup(void){
 	// Enable the GPIO pin for the LED (PF3).  Set the direction as output, and
 	// enable the GPIO pin for digital function.
 	//
-	*((volatile uint32_t *)SYSCTL_RCGCGPIO) = 0x20;
+	SYSCTL->RCGCGPIO = 0x20;
 	*((volatile uint32_t *)(GPIOF_BASE + GPIO_O_LOCK)) = 0x4C4F434B;
 	*((volatile uint32_t *)(GPIOF_BASE + GPIO_O_CR)) = 0x1F;
 

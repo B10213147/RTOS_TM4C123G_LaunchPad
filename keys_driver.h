@@ -1,8 +1,8 @@
 /*
  * keys_driver.h
  *
- *  Created on: 2016¦~6¤ë18¤é
- *      Author: USER
+ *  Created on: Jun 18, 2016
+ *      Author: Harvard Tseng
  */
 
 #ifndef KEYS_DRIVER_H_

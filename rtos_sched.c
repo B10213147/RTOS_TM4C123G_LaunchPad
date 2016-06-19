@@ -1,8 +1,8 @@
 /*
  * rtos_sched.c
  *
- *  Created on: 2016¦~6¤ë19¤é
- *      Author: USER
+ *  Created on: Jun 19, 2016
+ *      Author: Harvard Tseng
  */
 
 #include "rtos.h"

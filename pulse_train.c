@@ -6,13 +6,10 @@
  */
 
 #include "pulse_train.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include "inc/hw_gpio.h"
-#include "inc/hw_memmap.h"
+#include "rtos.h"
+#include "TM4C123GH6PM.h"
 #include "driverlib/gpio.h"
 #include "driverlib/timer.h"
-#include "rtos_pipe.h"
 
 #define disable  0
 #define enable  1
@@ -59,7 +56,7 @@ void pulse_train(void){
 				count = 0;
 			}
 
-			GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, pin_state);
+			GPIOPinWrite(GPIOF_BASE, GPIO_PIN_3, pin_state);
 
 			if(finish == latch-48){
 				output = delay;
