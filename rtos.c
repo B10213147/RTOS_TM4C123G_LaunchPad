@@ -6,7 +6,6 @@
  */
 
 #include "rtos.h"
-#include "rtos_task.h"
 #include "TM4C123GH6PM.h"
 #include "inc/hw_ints.h"
 #include "driverlib/sysctl.h"
@@ -14,30 +13,38 @@
 #include "driverlib/interrupt.h"
 
 // System variables
-uint8_t sch_tst, sch_idx;
 uint32_t slice_quantum;
+int rtos_recursive_counter;
+
+void enable_os(void){
+	rtos_recursive_counter++;
+	if(rtos_recursive_counter > 0) TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+}
+
+void disable_os(void){
+	//	IntPriorityMaskSet(0x20);	//only looks at the upper 3 bits
+	TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	rtos_recursive_counter--;
+	//	IntPriorityMaskSet(0x00);	//0 means no effect
+}
 
 // Real time operating system core
-void sch_int(void){
-	if(sch_tst == task_running) while(1);
+void rtos_Timer0_irq(void){
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-	sch_tst = task_running;
+	rtos_recursive_counter--;
+//	IntPriorityMaskSet(0x00);	//0 means no effect
+	rtos_sched();
 
-	IntPriorityMaskSet(0x00);	//0 means no effect
-//	(*priv_task)();
-	(*(sch_tab[sch_idx]))();
-	sch_idx++;
-	if(sch_idx == sch_tab_size / sizeof(voidfuncptr)) sch_idx = 0;
-	IntPriorityMaskSet(0x20);	//only looks at the upper 3 bits
-
-	sch_tst = task_completed;
+//	IntPriorityMaskSet(0x20);	//only looks at the upper 3 bits
+	enable_os();
 }
 
 // Start real time operating system
 // slice ... timeslice in microseconds
-void sch_on(uint32_t slice){
+void rtos_init(uint32_t slice){
 	sch_tst = task_completed;
 	sch_idx = 0;
+	rtos_recursive_counter = 0;
 	slice_quantum = slice * (SysCtlClockGet() / 1000000);
 
 	//
@@ -56,7 +63,7 @@ void sch_on(uint32_t slice){
 	// Configure the 32-bit periodic timer.
 	//
 	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
-	TimerIntRegister(TIMER0_BASE, TIMER_A, sch_int);
+	TimerIntRegister(TIMER0_BASE, TIMER_A, rtos_Timer0_irq);
 	IntPrioritySet(INT_TIMER0A, 0x00);	//set Timer0A to the highest priority
 	TimerLoadSet(TIMER0_BASE, TIMER_A, slice_quantum);
 

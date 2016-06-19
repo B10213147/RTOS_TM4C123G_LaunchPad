@@ -5,9 +5,7 @@
  *      Author: Harvard Tseng
  */
 
-#include "rtos_task.h"
-#include <stdint.h>
-#include <stdbool.h>
+#include "rtos.h"
 #include "inc/hw_memmap.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"

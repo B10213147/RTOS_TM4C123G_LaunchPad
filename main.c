@@ -1,16 +1,13 @@
 /*
  * main.c
  */
-#include <stdint.h>
-#include <stdbool.h>
+#include "rtos.h"
 #include "TM4C123GH6PM.h"
 #include "inc/hw_sysctl.h"
 #include "inc/hw_gpio.h"
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
-#include "rtos.h"
-#include "rtos_pipe.h"
 
 void startup(void);
 extern struct rtos_pipe keys_Fifo;
@@ -18,7 +15,8 @@ extern struct rtos_pipe pulse_Fifo;
 
 int main(void) {
 	startup();
-	sch_on(1000/4);	//slice = 1000us
+	rtos_init(1000/4);	//slice = 1000us
+	enable_os();
 
 	char temp;
 	while(1){

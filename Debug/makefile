@@ -10,9 +10,12 @@ GEN_OPTS__FLAG :=
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
+"./keys_driver.o" \
 "./main.o" \
 "./pulse_train.o" \
 "./rtos.o" \
+"./rtos_pipe.o" \
+"./rtos_sched.o" \
 "./rtos_task.o" \
 "./system_TM4C123.o" \
 "./tm4c123gh6pm_startup_ccs_gcc.o" \
@@ -130,40 +133,40 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-__rtos.out \
+rtos.out \
 
 EXE_OUTPUTS__QUOTED += \
-"__rtos.out" \
+"rtos.out" \
 
 BIN_OUTPUTS += \
-__rtos.hex \
+rtos.hex \
 
 BIN_OUTPUTS__QUOTED += \
-"__rtos.hex" \
+"rtos.hex" \
 
 
 # All Target
-all: __rtos.out
+all: rtos.out
 
 # Tool invocations
-__rtos.out: $(OBJS) $(LDS_SRCS) $(GEN_CMDS)
+rtos.out: $(OBJS) $(LDS_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GNU Linker'
-	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-gcc.exe" -march=armv7e-m -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -DTM4C123GH6PM -DPART_TM4C123GH6PM -Dgcc -ffunction-sections -fdata-sections -g -gdwarf-3 -gstrict-dwarf -Wall -Wl,-Map,"__rtos.map" -L"C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/gcc" -o"__rtos.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-gcc.exe" -march=armv7e-m -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -DTM4C123GH6PM -DPART_TM4C123GH6PM -Dgcc -ffunction-sections -fdata-sections -g -gdwarf-3 -gstrict-dwarf -Wall -Wl,-Map,"rtos.map" -L"C:/ti/TivaWare_C_Series-2.1.2.111/driverlib/gcc" -o"rtos.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-__rtos.hex: $(EXE_OUTPUTS)
+rtos.hex: $(EXE_OUTPUTS)
 	@echo 'Invoking: GNU Objcopy Utility'
-	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-objcopy.exe"  $(EXE_OUTPUTS__QUOTED) "__rtos.hex"
+	"C:/ti/ccsv6/tools/compiler/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-objcopy.exe"  $(EXE_OUTPUTS__QUOTED) "rtos.hex"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)$(BIN_OUTPUTS__QUOTED)
-	-$(RM) "main.d" "pulse_train.d" "rtos.d" "rtos_task.d" "system_TM4C123.d" "tm4c123gh6pm_startup_ccs_gcc.d" 
-	-$(RM) "main.o" "pulse_train.o" "rtos.o" "rtos_task.o" "system_TM4C123.o" "tm4c123gh6pm_startup_ccs_gcc.o" 
+	-$(RM) "keys_driver.d" "main.d" "pulse_train.d" "rtos.d" "rtos_pipe.d" "rtos_sched.d" "rtos_task.d" "system_TM4C123.d" "tm4c123gh6pm_startup_ccs_gcc.d" 
+	-$(RM) "keys_driver.o" "main.o" "pulse_train.o" "rtos.o" "rtos_pipe.o" "rtos_sched.o" "rtos_task.o" "system_TM4C123.o" "tm4c123gh6pm_startup_ccs_gcc.o" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

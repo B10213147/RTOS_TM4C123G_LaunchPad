@@ -5,7 +5,7 @@
  *      Author: USER
  */
 
-#include "rtos_pipe.h"
+#include "rtos.h"
 
 unsigned int rtos_pipe_read(struct rtos_pipe *pipe, char *data, unsigned int num_bytes){
 	unsigned int i;
