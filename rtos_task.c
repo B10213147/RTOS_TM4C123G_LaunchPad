@@ -18,3 +18,37 @@ void empty_task(void){
 voidfuncptr priv_task = empty_task;
 voidfuncptr sch_tab[] = {pulse_train, keys_driver, empty_task, keys_driver};
 int sch_tab_size = sizeof(sch_tab);
+
+void rtos_task_create(voidfuncptr func, void *arg){
+	struct rtos_task *task;
+
+	disable_os();
+	task = (struct rtos_task *)malloc(sizeof(struct rtos_task));
+	task->function = func;
+	task->agr = arg;
+	enable_os();
+}
+
+void rtos_task_delete(struct rtos_task *task){
+	disable_os();
+	free(task);
+	enable_os();
+}
+
+void rtos_task_insert(struct rtos_task **list, struct rtos_task *task){
+	task->next = *list;
+	*list = task;
+}
+
+void rtos_task_remove(struct rtos_task **list, struct rtos_task *task){
+	struct rtos_task *prev, *current;
+
+	if(*list == task) *list = (*list)->next;	//first in the list
+	else{
+		//serch task in list
+		for(prev = *list, current = (*list)->next; current != task;
+				prev = current, current = current->next);
+		prev->next = current->next;
+	}
+	task->next = 0;
+}

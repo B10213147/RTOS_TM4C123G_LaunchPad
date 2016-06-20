@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 // System status
 #define task_completed	0
@@ -51,6 +52,10 @@ extern uint8_t sch_tst, sch_idx;
 extern voidfuncptr priv_task;
 extern voidfuncptr sch_tab[];
 extern int sch_tab_size;
+extern void rtos_task_create(voidfuncptr function, void *arg);
+extern void rtos_task_delete(struct rtos_task *task);
+extern void rtos_task_insert(struct rtos_task **list, struct rtos_task *task);
+extern void rtos_task_remove(struct rtos_task **list, struct rtos_task *task);
 
 // rtos_pipe
 extern unsigned int rtos_pipe_read(struct rtos_pipe *pipe, char *data, unsigned int num_bytes);
