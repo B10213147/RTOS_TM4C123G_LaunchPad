@@ -52,6 +52,8 @@ extern uint8_t sch_tst, sch_idx;
 extern voidfuncptr priv_task;
 extern voidfuncptr sch_tab[];
 extern int sch_tab_size;
+extern struct rtos_task *rtos_running_task;		// Currently running task.
+extern struct rtos_task *rtos_ready_tasks;			// List of ready to run tasks.
 extern void rtos_task_create(voidfuncptr function, void *arg);
 extern void rtos_task_delete(struct rtos_task *task);
 extern void rtos_task_insert(struct rtos_task **list, struct rtos_task *task);

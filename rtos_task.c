@@ -19,11 +19,15 @@ voidfuncptr priv_task = empty_task;
 voidfuncptr sch_tab[] = {pulse_train, keys_driver, empty_task, keys_driver};
 int sch_tab_size = sizeof(sch_tab);
 
+struct rtos_task *rtos_running_task;		// Currently running task.
+struct rtos_task *rtos_ready_tasks;			// List of ready to run tasks.
+
 void rtos_task_create(voidfuncptr func, void *arg){
 	struct rtos_task *task;
 
 	disable_os();
 	task = (struct rtos_task *)malloc(sizeof(struct rtos_task));
+	rtos_task_insert(&rtos_ready_tasks, task);
 	task->function = func;
 	task->agr = arg;
 	enable_os();
