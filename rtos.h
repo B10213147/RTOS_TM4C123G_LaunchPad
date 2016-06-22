@@ -12,10 +12,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-// System status
-#define task_completed	0
-#define task_running	1
-
 typedef void (* voidfuncptr)();
 
 struct rtos_pipe{
@@ -46,14 +42,11 @@ extern void rtos_init(uint32_t slice);
 // rtos_sched
 extern void rtos_sched(void);
 extern void rtos_Timer0_irq();
-extern uint8_t sch_tst, sch_idx;
 
 // rtos_task
-extern voidfuncptr priv_task;
-extern voidfuncptr sch_tab[];
-extern int sch_tab_size;
 extern struct rtos_task *rtos_running_task;		// Currently running task.
 extern struct rtos_task *rtos_ready_tasks;			// List of ready to run tasks.
+extern void empty_task(void);
 extern void rtos_task_create(voidfuncptr function, void *arg);
 extern void rtos_task_delete(struct rtos_task *task);
 extern void rtos_task_insert(struct rtos_task **list, struct rtos_task *task);

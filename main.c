@@ -7,6 +7,8 @@
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
+#include "pulse_train.h"
+#include "keys_driver.h"
 
 void startup(void);
 extern struct rtos_pipe keys_Fifo;
@@ -16,6 +18,11 @@ int main(void) {
 	startup();
 	rtos_init(1000/4);	//slice = 1000us
 	enable_os();
+	rtos_task_create(pulse_train, 0);
+	rtos_task_create(keys_driver, 0);
+	rtos_task_create(empty_task, 0);
+	rtos_task_create(keys_driver, 0);
+
 
 	char temp;
 	while(1){

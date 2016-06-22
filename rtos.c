@@ -43,9 +43,9 @@ void rtos_Timer0_irq(void){
 // Start real time operating system
 // slice ... timeslice in microseconds
 void rtos_init(uint32_t slice){
-	sch_tst = task_completed;
-	sch_idx = 0;
 	rtos_recursive_counter = 0;
+	rtos_running_task = 0;
+	rtos_ready_tasks = 0;
 	slice_quantum = slice * (SysCtlClockGet() / 1000000);
 
 	//
