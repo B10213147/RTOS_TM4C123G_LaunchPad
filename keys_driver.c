@@ -1,16 +1,14 @@
 /*
  * keys_driver.c
  *
- *  Created on: 2016¦~6¤ë18¤é
- *      Author: USER
+ *  Created on: Jun 18, 2016
+ *      Author: Harvard Tseng
  */
 
 #include "keys_driver.h"
-#include <stdint.h>
-#include <stdbool.h>
+#include "rtos.h"
 #include "TM4C123GH6PM.h"
 #include "driverlib/gpio.h"
-#include "rtos_pipe.h"
 
 char keys[10];
 struct rtos_pipe keys_Fifo = {0, 0, 10, keys};

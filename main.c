@@ -3,11 +3,12 @@
  */
 #include "rtos.h"
 #include "TM4C123GH6PM.h"
-#include "inc/hw_sysctl.h"
 #include "inc/hw_gpio.h"
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
+#include "pulse_train.h"
+#include "keys_driver.h"
 
 void startup(void);
 extern struct rtos_pipe keys_Fifo;
@@ -17,6 +18,11 @@ int main(void) {
 	startup();
 	rtos_init(1000/4);	//slice = 1000us
 	enable_os();
+	rtos_task_create(pulse_train, 0);
+	rtos_task_create(keys_driver, 0);
+	rtos_task_create(empty_task, 0);
+	rtos_task_create(keys_driver, 0);
+
 
 	char temp;
 	while(1){
@@ -49,7 +55,7 @@ void startup(void){
 	// Enable the GPIO pin for the LED (PF3).  Set the direction as output, and
 	// enable the GPIO pin for digital function.
 	//
-	*((volatile uint32_t *)SYSCTL_RCGCGPIO) = 0x20;
+	SYSCTL->RCGCGPIO = 0x20;
 	*((volatile uint32_t *)(GPIOF_BASE + GPIO_O_LOCK)) = 0x4C4F434B;
 	*((volatile uint32_t *)(GPIOF_BASE + GPIO_O_CR)) = 0x1F;
 
