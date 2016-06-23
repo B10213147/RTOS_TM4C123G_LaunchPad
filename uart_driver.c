@@ -34,11 +34,8 @@ void uart_driver(void){
 	}
 }
 
-void uart0_init(void){
-//	UARTDisable(UART0_BASE);
-
+void uart_driver_init(void){
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
 
 	//
@@ -47,15 +44,10 @@ void uart0_init(void){
 	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_UART0))
 	{
 	}
+
 	GPIOPinTypeUART(GPIOA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 	UARTConfigSetExpClk(UART0_BASE, SysCtlClockGet(),
 			9600, UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE);
 	UARTFIFOEnable(UART0_BASE);
 	UARTEnable(UART0_BASE);
 }
-
-
-
-
-
-

@@ -40,7 +40,8 @@ struct rtos_task *rtos_sched_remove(struct rtos_task_list **list){
 void rtos_sched(void){
 //	static struct rtos_task_list *list;
 //	list = rtos_sched_list_update();
-	rtos_sched_run(rtos_ready_tasks);
+	struct rtos_task *first = rtos_ready_tasks;
+	rtos_sched_run(first);
 	rtos_running_task = 0;
 }
 
