@@ -12,8 +12,41 @@
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 
-void uart_init(void){
-	UARTDisable(UART0_BASE);
+char rx_data[10];
+char tx_data[10];
+struct rtos_pipe uart_rx_Fifo = {0, 0, 10, rx_data};
+struct rtos_pipe uart_tx_Fifo = {0, 0, 10, tx_data};
+
+void uart_driver(void){
+	char rx_data, tx_data;
+
+	if(UARTCharsAvail(UART0_BASE)){ //there is data in the receive FIFO
+		rx_data = UARTCharGetNonBlocking(UART0_BASE);
+		if(rx_data != -1){
+			rtos_pipe_write(&uart_rx_Fifo, &rx_data, 1);
+		}
+	}
+
+	if(!UARTBusy(UART0_BASE)){ //all transmissions are complete
+		if(rtos_pipe_read(&uart_tx_Fifo, &tx_data, 1)){
+			UARTCharPutNonBlocking(UART0_BASE, tx_data);
+		}
+	}
+}
+
+void uart0_init(void){
+//	UARTDisable(UART0_BASE);
+
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
+
+	//
+	// Check if the peripheral access is enabled.
+	//
+	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_UART0))
+	{
+	}
 	GPIOPinTypeUART(GPIOA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 	UARTConfigSetExpClk(UART0_BASE, SysCtlClockGet(),
 			9600, UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE);

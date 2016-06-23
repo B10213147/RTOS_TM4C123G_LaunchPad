@@ -9,6 +9,7 @@
 #include "driverlib/timer.h"
 #include "pulse_train.h"
 #include "keys_driver.h"
+#include "uart_driver.h"
 
 void startup(void);
 extern struct rtos_pipe keys_Fifo;
@@ -16,18 +17,21 @@ extern struct rtos_pipe pulse_Fifo;
 
 int main(void) {
 	startup();
+	uart0_init();
 	rtos_init(1000/4);	//slice = 1000us
 	enable_os();
-	rtos_task_create(pulse_train, 0);
-	rtos_task_create(keys_driver, 0);
+//	rtos_task_create(pulse_train, 0);
+//	rtos_task_create(keys_driver, 0);
 	rtos_task_create(empty_task, 0);
-	rtos_task_create(keys_driver, 0);
+//	rtos_task_create(keys_driver, 0);
+	rtos_task_create(uart_driver, 0);
 
 
 	char temp;
 	while(1){
-		if(rtos_pipe_read(&keys_Fifo, &temp, 1)){
-			rtos_pipe_write(&pulse_Fifo, &temp, 1);
+//		uart_driver();
+		if(rtos_pipe_read(&uart_rx_Fifo, &temp, 1)){
+			rtos_pipe_write(&uart_tx_Fifo, &temp, 1);
 		}
 	}
 }
