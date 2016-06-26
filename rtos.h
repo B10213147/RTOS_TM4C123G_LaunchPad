@@ -53,6 +53,8 @@ extern void rtos_task_insert(struct rtos_task **list, struct rtos_task *task);
 extern void rtos_task_remove(struct rtos_task **list, struct rtos_task *task);
 
 // rtos_pipe
+extern struct rtos_pipe *rtos_pipe_create(unsigned int size);
+extern void rtos_pipe_delete(struct rtos_pipe *pipe);
 extern unsigned int rtos_pipe_read(struct rtos_pipe *pipe, char *data, unsigned int num_bytes);
 extern unsigned int rtos_pipe_write(struct rtos_pipe *pipe, char *data, unsigned int num_bytes);
 

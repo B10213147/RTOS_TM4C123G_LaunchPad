@@ -16,8 +16,7 @@
 #define enable	1
 #define delay	2
 
-char frequency[10];
-struct rtos_pipe pulse_Fifo = {0, 0, 10, frequency};
+struct rtos_pipe *pulse_Fifo;
 
 uint8_t pin_state, color;
 const uint32_t period = 1000;	//unit = ms
@@ -35,8 +34,8 @@ void pulse_train(void){
 		count = 0;
 		finish = 0;
 
-		if(rtos_pipe_read(&pulse_Fifo, &latch, 1)){
-			if(latch>='0' && latch<='9'){	//number
+		if(rtos_pipe_read(pulse_Fifo, &latch, 1)){
+			if(latch>='1' && latch<='9'){	//number
 				output = enable;
 			}
 			else if(latch=='r' || latch=='R'){
@@ -82,6 +81,7 @@ void pulse_train_init(void){
 	count = 0;
 	finish = 0;
 	output = disable;
+	color = GPIO_PIN_3;
 
 	//
 	// Enable the GPIO port that is used for the on-board LED.
@@ -96,4 +96,6 @@ void pulse_train_init(void){
 	}
 
 	GPIOPinTypeGPIOOutput(GPIOF_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
+
+	pulse_Fifo = rtos_pipe_create(10);
 }
