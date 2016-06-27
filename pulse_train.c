@@ -15,73 +15,76 @@
 #define disable	0
 #define enable	1
 #define delay	2
+#define RED		GPIO_PIN_1
+#define BLUE	GPIO_PIN_2
+#define GREEN	GPIO_PIN_3
 
 struct rtos_pipe *pulse_Fifo;
 
-uint8_t pin_state, color;
 const uint32_t period = 1000;	//unit = ms
 char latch;
-int count, finish, output = disable;
-void pulse_train(void){
-	if(output == delay){	//delay 1s
-		count++;
-		if(count == period){
-			output = disable;
+void pulse_train(struct pulse_info *info){
+	if(info->output == delay){	//delay 1s
+		info->count++;
+		if(info->count == period){
+			info->output = disable;
 		}
 	}
 
-	if(output == disable){
-		count = 0;
-		finish = 0;
+	if(info->output == disable){
+		info->count = 0;
+		info->finish = 0;
 
 		if(rtos_pipe_read(pulse_Fifo, &latch, 1)){
 			if(latch>='1' && latch<='9'){	//number
-				output = enable;
+				info->output = enable;
 			}
 			else if(latch=='r' || latch=='R'){
-				color = GPIO_PIN_1;
+				info->color = RED;
 			}
 			else if(latch=='g' || latch=='G'){
-				color = GPIO_PIN_3;
+				info->color = GREEN;
 			}
 			else if(latch=='b' || latch=='B'){
-				color = GPIO_PIN_2;
+				info->color = BLUE;
 			}
 			else{
-				output = disable;
+				info->output = disable;
 			}
 		}
 		else{	//nothing in pipe
-			output = disable;
+			info->output = disable;
 		}
 	}
 
-	if(output == enable){
-		count++;
-		if(count >= period/(latch-48)){
-			if(pin_state == 0x00){
-				pin_state = color;
+	if(info->output == enable){
+		info->count++;
+		if(info->count >= period/(latch-48)){
+			if(info->pin_state == 0x00){
+				info->pin_state = info->color;
 			}
 			else{
-				pin_state = 0x00;
-				finish++;
-				count = 0;
+				info->pin_state = 0x00;
+				info->finish++;
+				info->count = 0;
 			}
 
-			GPIOPinWrite(GPIOF_BASE, color, pin_state);
+			GPIOPinWrite(GPIOF_BASE, info->color, info->pin_state);
 
-			if(finish == latch-48){
-				output = delay;
+			if(info->finish == latch-48){
+				info->output = delay;
 			}
 		}
 	}
 }
 
-void pulse_train_init(void){
-	count = 0;
-	finish = 0;
-	output = disable;
-	color = GPIO_PIN_3;
+struct pulse_info *pulse_train_init(void){
+	struct pulse_info *info;
+	info = (struct pulse_info *)malloc(sizeof(struct pulse_info));
+	info->count = 0;
+	info->finish = 0;
+	info->output = disable;
+	info->color = GREEN;
 
 	//
 	// Enable the GPIO port that is used for the on-board LED.
@@ -98,4 +101,6 @@ void pulse_train_init(void){
 	GPIOPinTypeGPIOOutput(GPIOF_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 
 	pulse_Fifo = rtos_pipe_create(10);
+
+	return info;
 }

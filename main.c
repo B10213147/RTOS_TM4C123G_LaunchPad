@@ -11,12 +11,11 @@
 void startup(void);
 void print_string(char *string);
 
-
-
+struct pulse_info *green_pulse;
 int main(void) {
 	startup();
 
-	rtos_task_create(pulse_train, 0);
+	rtos_task_create(pulse_train, green_pulse);
 	rtos_task_create(keys_driver, 0);
 	rtos_task_create(empty_task, 0);
 	//	rtos_task_create(keys_driver, 0);
@@ -62,7 +61,7 @@ void startup(void){
 
 	keys_driver_init();
 
-	pulse_train_init();
+	green_pulse = pulse_train_init();
 
 	uart_driver_init();
 
