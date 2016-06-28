@@ -27,6 +27,7 @@ struct rtos_task{
 	void *agr;
 	int interval;
 	int remain_ticks;
+	bool delete_flag;
 };
 
 struct rtos_task_list{
@@ -48,7 +49,6 @@ extern void rtos_Timer0_irq();
 // rtos_task
 extern struct rtos_task *rtos_running_task;		// Currently running task.
 extern struct rtos_task *rtos_ready_tasks;			// List of ready to run tasks.
-extern void empty_task(void);
 extern void rtos_task_create(voidfuncptr function, void *arg, int interval);
 extern void rtos_task_delete(struct rtos_task *task);
 extern void rtos_task_insert(struct rtos_task **list, struct rtos_task *task);

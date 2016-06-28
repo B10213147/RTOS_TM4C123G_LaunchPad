@@ -17,9 +17,7 @@ int main(void) {
 
 	rtos_task_create(pulse_train, green_pulse, 4);
 	rtos_task_create(keys_driver, 0, 2);
-//	rtos_task_create(empty_task, 0, 1);
-	//	rtos_task_create(keys_driver, 0);
-	rtos_task_create(uart_driver, 0, 5);
+	rtos_task_create(uart_driver, 0, 400);
 
 
 	char temp;
