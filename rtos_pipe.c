@@ -32,6 +32,27 @@ unsigned int rtos_pipe_write(struct rtos_pipe *pipe, char *data, unsigned int nu
 	return i;
 }
 
+struct rtos_pipe *rtos_pipe_create(unsigned int size){
+	struct rtos_pipe *pipe;
+
+	disable_os();
+	pipe = (struct rtos_pipe *)malloc(sizeof(struct rtos_pipe));
+	pipe->data = (char *)malloc(size + 1);
+	pipe->begin = 0;
+	pipe->end = 0;
+	pipe->size = size;
+	enable_os();
+
+	return pipe;
+}
+
+void rtos_pipe_delete(struct rtos_pipe *pipe){
+	disable_os();
+	free(pipe->data);
+	free(pipe);
+	enable_os();
+}
+
 
 
 
