@@ -3,31 +3,73 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-CMD_SRCS += \
-../tm4c123gh6pm.cmd 
+LDS_SRCS += \
+../tm4c123gh6pm.lds 
 
 C_SRCS += \
+../keys_driver.c \
 ../main.c \
-../tm4c123gh6pm_startup_ccs.c 
+../pulse_train.c \
+../rtos.c \
+../rtos_pipe.c \
+../rtos_sched.c \
+../rtos_task.c \
+../system_TM4C123.c \
+../tm4c123gh6pm_startup_ccs_gcc.c 
 
 OBJS += \
-./main.obj \
-./tm4c123gh6pm_startup_ccs.obj 
+./keys_driver.o \
+./main.o \
+./pulse_train.o \
+./rtos.o \
+./rtos_pipe.o \
+./rtos_sched.o \
+./rtos_task.o \
+./system_TM4C123.o \
+./tm4c123gh6pm_startup_ccs_gcc.o 
 
 C_DEPS += \
-./main.pp \
-./tm4c123gh6pm_startup_ccs.pp 
+./keys_driver.d \
+./main.d \
+./pulse_train.d \
+./rtos.d \
+./rtos_pipe.d \
+./rtos_sched.d \
+./rtos_task.d \
+./system_TM4C123.d \
+./tm4c123gh6pm_startup_ccs_gcc.d 
 
 C_DEPS__QUOTED += \
-"main.pp" \
-"tm4c123gh6pm_startup_ccs.pp" 
+"keys_driver.d" \
+"main.d" \
+"pulse_train.d" \
+"rtos.d" \
+"rtos_pipe.d" \
+"rtos_sched.d" \
+"rtos_task.d" \
+"system_TM4C123.d" \
+"tm4c123gh6pm_startup_ccs_gcc.d" 
 
 OBJS__QUOTED += \
-"main.obj" \
-"tm4c123gh6pm_startup_ccs.obj" 
+"keys_driver.o" \
+"main.o" \
+"pulse_train.o" \
+"rtos.o" \
+"rtos_pipe.o" \
+"rtos_sched.o" \
+"rtos_task.o" \
+"system_TM4C123.o" \
+"tm4c123gh6pm_startup_ccs_gcc.o" 
 
 C_SRCS__QUOTED += \
+"../keys_driver.c" \
 "../main.c" \
-"../tm4c123gh6pm_startup_ccs.c" 
+"../pulse_train.c" \
+"../rtos.c" \
+"../rtos_pipe.c" \
+"../rtos_sched.c" \
+"../rtos_task.c" \
+"../system_TM4C123.c" \
+"../tm4c123gh6pm_startup_ccs_gcc.c" 
 
 
