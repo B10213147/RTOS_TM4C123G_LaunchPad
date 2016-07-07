@@ -7,6 +7,8 @@
 #include "pulse_train.h"
 #include "keys_driver.h"
 #include "uart_driver.h"
+#include "pwm_polling.h"
+
 
 void startup(void);
 void print_string(char *string);
@@ -15,10 +17,12 @@ struct pulse_info *green_pulse;
 int main(void) {
 	startup();
 
-	rtos_task_create(pulse_train, green_pulse, 4);
+//	rtos_task_create(pulse_train, green_pulse, 4);
 	rtos_task_create(keys_driver, 0, 2);
-	rtos_task_create(uart_driver, 0, 400);
-
+	rtos_task_create(uart_driver, 0, 10);
+	rtos_task_create(pwm_R, 0, 100);
+	rtos_task_create(pwm_G, 0, 50);
+	rtos_task_create(pwm_B, 0, 100);
 
 	char temp;
 	while(1){
@@ -55,11 +59,13 @@ void startup(void){
 	SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN |
 			SYSCTL_XTAL_16MHZ);
 
-	rtos_init(1000/4);	//slice = 1000us
+	pwm1_init();
+
+	rtos_init(1000);	//slice = 1000us
 
 	keys_driver_init();
 
-	green_pulse = pulse_train_init();
+//	green_pulse = pulse_train_init();
 
 	uart_driver_init();
 
