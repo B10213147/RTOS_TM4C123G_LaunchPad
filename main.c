@@ -8,6 +8,7 @@
 #include "keys_driver.h"
 #include "uart_driver.h"
 #include "pwm_polling.h"
+#include "three_axes.h"
 
 
 void startup(void);
@@ -16,7 +17,16 @@ void print_string(char *string);
 struct pulse_info *green_pulse;
 int main(void) {
 	startup();
-
+	axes_init();
+	while(1){
+		int i;
+		for(i = 0; i<=10; i += 1){
+		x_axis->next = i;
+		x_move();
+		for(int j=0; j<1600000; j++);
+		}
+	}
+	/*
 //	rtos_task_create(pulse_train, green_pulse, 4);
 	rtos_task_create(keys_driver, 0, 2);
 	rtos_task_create(uart_driver, 0, 10);
@@ -43,6 +53,7 @@ int main(void) {
 			}
 		}
 	}
+	*/
 }
 
 void print_string(char *string){
