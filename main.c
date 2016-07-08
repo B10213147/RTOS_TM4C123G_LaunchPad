@@ -16,13 +16,18 @@ void print_string(char *string);
 
 struct pulse_info *green_pulse;
 int main(void) {
+	struct axis *axis;
 	startup();
 	axes_init();
 	while(1){
 		int i;
 		for(i = 0; i<=10; i += 1){
 		x_axis->next = i;
-		x_move();
+		axis = x_axis;
+		pulse_Gen(axis);
+		y_axis->next = i;
+		axis = y_axis;
+		pulse_Gen(axis);
 		for(int j=0; j<1600000; j++);
 		}
 	}

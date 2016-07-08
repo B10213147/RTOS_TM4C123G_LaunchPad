@@ -9,6 +9,7 @@
 #define THREE_AXES_H_
 
 struct axis{
+	unsigned int pin;
 	char dir;
 	unsigned int total;
 	unsigned int remain;
@@ -22,7 +23,7 @@ extern struct axis *y_axis;
 extern struct axis *z_axis;
 
 extern void axes_init(void);
-extern void x_move(void);
+extern void pulse_Gen(struct axis *axis);
 
 
 #endif /* THREE_AXES_H_ */
