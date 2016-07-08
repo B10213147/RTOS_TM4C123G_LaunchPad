@@ -20,9 +20,31 @@ struct axis *x_axis;
 struct axis *y_axis;
 struct axis *z_axis;
 
+void x_move(void){
+	if(x_axis->remain == 0){
+		x_axis->finished = 'y';
+		return;	//nothing to do
+	}
+
+	if(x_axis->dir == 'r'){
+		GPIOPinWrite(GPIOF_BASE, x_axis->dir_pin, x_axis->dir_pin);
+	}
+	else{
+		GPIOPinWrite(GPIOF_BASE, x_axis->dir_pin, 0);
+	}
+
+	x_axis->current = x_axis->next;
+	if(x_axis->current != 0){
+		pulse_Gen(x_axis);
+		x_axis->remain -= x_axis->current;
+	}
+	else{
+		GPIOPinWrite(GPIOF_BASE, x_axis->pulse_pin, 0);
+	}
+}
+
 float duty = 0.001;
 uint32_t full_Period = 160000; //unit = ticks/10ms
-
 void pulse_Gen(struct axis *axis){
 	uint32_t period = full_Period / axis->next;	//unit = ticks/cycle
 	uint32_t width_L = period * (1 - duty);
@@ -34,7 +56,7 @@ void pulse_Gen(struct axis *axis){
 		if(TimerValueGet(TIMER1_BASE, TIMER_A) < next_ticks){
 			if(pin_state == 0){
 				next_ticks -= width_H;
-				pin_state = axis->pin;
+				pin_state = axis->pulse_pin;
 			}
 			else{
 				next_ticks -= width_L;
@@ -43,18 +65,19 @@ void pulse_Gen(struct axis *axis){
 			}
 
 			if(axis->next <= 0) {
-				GPIOPinWrite(GPIOF_BASE, axis->pin, 0);
+				GPIOPinWrite(GPIOF_BASE, axis->pulse_pin, 0);
 				break;
 			}
 
-			GPIOPinWrite(GPIOF_BASE, axis->pin, pin_state);
+			GPIOPinWrite(GPIOF_BASE, axis->pulse_pin, pin_state);
 		}
 	}
 }
 
 void axes_init(void){
 	x_axis = (struct axis*)malloc(sizeof(struct axis));
-	x_axis->pin = RED;
+	x_axis->pulse_pin = RED;
+	x_axis->dir_pin = BLUE;
 	x_axis->dir = 'r';
 	x_axis->total = 0;
 	x_axis->remain = 0;
@@ -66,9 +89,9 @@ void axes_init(void){
 	z_axis = (struct axis*)malloc(sizeof(struct axis));
 
 	*y_axis = *x_axis;
-	y_axis->pin = GREEN;
+	y_axis->pulse_pin = GREEN;
 	*z_axis = *x_axis;
-	z_axis->pin = BLUE;
+	z_axis->pulse_pin = BLUE;
 
 	//
 	// Enable the GPIO port that is used for the on-board LED.

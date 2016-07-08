@@ -9,11 +9,12 @@
 #define THREE_AXES_H_
 
 struct axis{
-	unsigned int pin;
+	unsigned int pulse_pin;
+	unsigned int dir_pin;
 	char dir;
-	unsigned int total;
+	int total;
 	unsigned int remain;
-	unsigned int current;
+	int current;
 	int next;
 	char finished;
 };
@@ -23,6 +24,7 @@ extern struct axis *y_axis;
 extern struct axis *z_axis;
 
 extern void axes_init(void);
+extern void x_move(void);
 extern void pulse_Gen(struct axis *axis);
 
 

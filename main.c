@@ -16,20 +16,25 @@ void print_string(char *string);
 
 struct pulse_info *green_pulse;
 int main(void) {
-	struct axis *axis;
 	startup();
 	axes_init();
+
+	x_axis->total = -1000;
 	while(1){
-		int i;
-		for(i = 0; i<=10; i += 1){
-		x_axis->next = i;
-		axis = x_axis;
-		pulse_Gen(axis);
-		y_axis->next = i;
-		axis = y_axis;
-		pulse_Gen(axis);
-		for(int j=0; j<1600000; j++);
+		if(x_axis->finished == 'y'){
+			if(x_axis->total <= 0){
+				x_axis->dir = 'l';
+				x_axis->remain = -x_axis->total;
+			}
+			else{
+				x_axis->dir = 'r';
+				x_axis->remain = x_axis->total;
+			}
+			x_axis->finished = 'n';
+			for(int i=0; i<1600000; i++);
 		}
+		if(x_axis->next == 0) x_axis->next = 10;
+		x_move();
 	}
 	/*
 //	rtos_task_create(pulse_train, green_pulse, 4);
