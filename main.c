@@ -19,7 +19,8 @@ int main(void) {
 	startup();
 	axes_init();
 
-	x_axis->total = -1000;
+	x_axis->total = 51;
+	y_axis->total = -24;
 	while(1){
 		if(x_axis->finished == 'y'){
 			if(x_axis->total <= 0){
@@ -30,11 +31,23 @@ int main(void) {
 				x_axis->dir = 'r';
 				x_axis->remain = x_axis->total;
 			}
-			x_axis->finished = 'n';
-			for(int i=0; i<1600000; i++);
 		}
-		if(x_axis->next == 0) x_axis->next = 10;
-		x_move();
+
+		if(y_axis->finished == 'y'){
+			if(y_axis->total <= 0){
+				y_axis->dir = 'l';
+				y_axis->remain = -y_axis->total;
+			}
+			else{
+				y_axis->dir = 'r';
+				y_axis->remain = y_axis->total;
+			}
+		}
+
+		if(x_axis->next == 0) x_axis->next = 8;
+		axis_move(x_axis);
+		if(y_axis->next == 0) y_axis->next = 5;
+		axis_move(y_axis);
 	}
 	/*
 //	rtos_task_create(pulse_train, green_pulse, 4);
@@ -63,7 +76,7 @@ int main(void) {
 			}
 		}
 	}
-	*/
+	 */
 }
 
 void print_string(char *string){
@@ -86,7 +99,7 @@ void startup(void){
 
 	keys_driver_init();
 
-//	green_pulse = pulse_train_init();
+	//	green_pulse = pulse_train_init();
 
 	uart_driver_init();
 

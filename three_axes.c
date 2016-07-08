@@ -20,31 +20,54 @@ struct axis *x_axis;
 struct axis *y_axis;
 struct axis *z_axis;
 
-void x_move(void){
-	if(x_axis->remain == 0){
-		x_axis->finished = 'y';
-		return;	//nothing to do
+void axis_move(struct axis *axis){
+	axis->finished = 'n';
+
+	if(axis->remain > 0){
+		if(axis->dir == 'r' || axis->dir == 'u'){
+			GPIOPinWrite(GPIOF_BASE, axis->dir_pin, axis->dir_pin);
+		}
+		else{
+			GPIOPinWrite(GPIOF_BASE, axis->dir_pin, 0);
+		}
+
+		axis->current = axis->next;
+		pulse_Gen(axis);
+		axis->remain -= axis->current;
 	}
 
-	if(x_axis->dir == 'r'){
-		GPIOPinWrite(GPIOF_BASE, x_axis->dir_pin, x_axis->dir_pin);
-	}
-	else{
-		GPIOPinWrite(GPIOF_BASE, x_axis->dir_pin, 0);
+	if(axis->remain < 0){
+		position_Modify(axis);
 	}
 
-	x_axis->current = x_axis->next;
-	if(x_axis->current != 0){
-		pulse_Gen(x_axis);
-		x_axis->remain -= x_axis->current;
-	}
-	else{
-		GPIOPinWrite(GPIOF_BASE, x_axis->pulse_pin, 0);
+	if(axis->remain == 0){
+		axis->finished = 'y';
+		axis->next = 0;
+		GPIOPinWrite(GPIOF_BASE, axis->dir_pin, 0);
 	}
 }
 
-float duty = 0.001;
-uint32_t full_Period = 160000; //unit = ticks/10ms
+void position_Modify(struct axis *axis){
+	//inverse direction
+	if(axis->dir == 'r' || axis->dir == 'u'){
+		GPIOPinWrite(GPIOF_BASE, axis->dir_pin, 0);
+	}
+	else{
+		GPIOPinWrite(GPIOF_BASE, axis->dir_pin, axis->dir_pin);
+	}
+
+	axis->remain = -axis->remain;	//prefer positive value
+	axis->next = axis->remain % 5;
+	do{
+		axis->current = axis->next;
+		pulse_Gen(axis);
+		axis->remain -= axis->current;
+		if(axis->next == 0) axis->next = 5;
+	}while(axis->remain != 0);
+}
+
+float duty = 0.02;
+uint32_t full_Period = 16000000; //unit = ticks/10ms
 void pulse_Gen(struct axis *axis){
 	uint32_t period = full_Period / axis->next;	//unit = ticks/cycle
 	uint32_t width_L = period * (1 - duty);
@@ -52,7 +75,7 @@ void pulse_Gen(struct axis *axis){
 	uint8_t pin_state = 0;
 	uint32_t next_ticks = TimerValueGet(TIMER1_BASE, TIMER_A) - width_L;
 
-	while(1){
+	while(axis->next > 0){
 		if(TimerValueGet(TIMER1_BASE, TIMER_A) < next_ticks){
 			if(pin_state == 0){
 				next_ticks -= width_H;
@@ -63,12 +86,6 @@ void pulse_Gen(struct axis *axis){
 				pin_state = 0;
 				axis->next--;
 			}
-
-			if(axis->next <= 0) {
-				GPIOPinWrite(GPIOF_BASE, axis->pulse_pin, 0);
-				break;
-			}
-
 			GPIOPinWrite(GPIOF_BASE, axis->pulse_pin, pin_state);
 		}
 	}

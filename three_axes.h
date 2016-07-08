@@ -13,7 +13,7 @@ struct axis{
 	unsigned int dir_pin;
 	char dir;
 	int total;
-	unsigned int remain;
+	int remain;
 	int current;
 	int next;
 	char finished;
@@ -24,8 +24,9 @@ extern struct axis *y_axis;
 extern struct axis *z_axis;
 
 extern void axes_init(void);
-extern void x_move(void);
+extern void axis_move(struct axis *axis);
 extern void pulse_Gen(struct axis *axis);
+extern void position_Modify(struct axis *axis);
 
 
 #endif /* THREE_AXES_H_ */
