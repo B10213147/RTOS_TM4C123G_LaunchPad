@@ -11,6 +11,8 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 #include "driverlib/gpio.h"
+#include "driverlib/pwm.h"
+#include "driverlib/pin_map.h"
 
 #define RED		GPIO_PIN_1
 #define BLUE	GPIO_PIN_2
@@ -21,7 +23,7 @@ struct axis *y_axis;
 struct axis *z_axis;
 
 void axis_move(struct axis *axis){
-	axis->finished = 'n';
+//	axis->working = 'n';
 
 	if(axis->remain > 0){
 		if(axis->dir == 'r' || axis->dir == 'u'){
@@ -41,7 +43,7 @@ void axis_move(struct axis *axis){
 	}
 
 	if(axis->remain == 0){
-		axis->finished = 'y';
+		axis->working = 'n';
 		axis->next = 0;
 		GPIOPinWrite(GPIOF_BASE, axis->dir_pin, 0);
 	}
@@ -66,29 +68,34 @@ void position_Modify(struct axis *axis){
 	}while(axis->remain != 0);
 }
 
-float duty = 0.02;
-uint32_t full_Period = 16000000; //unit = ticks/10ms
-void pulse_Gen(struct axis *axis){
-	uint32_t period = full_Period / axis->next;	//unit = ticks/cycle
+float duty = 0.001;
+uint32_t full_Period = 1600000; //unit = ticks/10ms
+char pulse_Gen(struct axis *axis){
+	uint32_t period = full_Period / axis->current;	//unit = ticks/cycle
 	uint32_t width_L = period * (1 - duty);
 	uint32_t width_H = period - width_L;
-	uint8_t pin_state = 0;
-	uint32_t next_ticks = TimerValueGet(TIMER1_BASE, TIMER_A) - width_L;
 
-	while(axis->next > 0){
-		if(TimerValueGet(TIMER1_BASE, TIMER_A) < next_ticks){
-			if(pin_state == 0){
-				next_ticks -= width_H;
-				pin_state = axis->pulse_pin;
-			}
-			else{
-				next_ticks -= width_L;
-				pin_state = 0;
-				axis->next--;
-			}
-			GPIOPinWrite(GPIOF_BASE, axis->pulse_pin, pin_state);
-		}
+	if(axis->working == false){
+		axis->next_ticks = TimerValueGet(TIMER2_BASE, TIMER_A) - width_L;
+		if(axis->next_ticks < 0) axis->next_ticks += 0x7fffffff;
+		axis->working = true;
 	}
+	uint32_t n = TimerValueGet(TIMER2_BASE, TIMER_A);
+	if(n <= axis->next_ticks){
+		if(axis->pin_state == 0){
+			axis->next_ticks -= width_H;
+			axis->pin_state = axis->pulse_pin;
+		}
+		else{
+			axis->next_ticks -= width_L;
+			axis->pin_state = 0;
+		}
+		GPIOPinWrite(GPIOF_BASE, axis->pulse_pin, axis->pin_state);
+		if(axis->next_ticks < 0) axis->next_ticks += 0x7fffffff;
+		if(axis->pin_state == 0) return 'f';	//falling edge
+		else return 'r';	//rising edge
+	}
+	return 0;
 }
 
 void axes_init(void){
@@ -100,7 +107,7 @@ void axes_init(void){
 	x_axis->remain = 0;
 	x_axis->current = 0;
 	x_axis->next = 0;
-	x_axis->finished = 'y';
+	x_axis->working = false;
 
 	y_axis = (struct axis*)malloc(sizeof(struct axis));
 	z_axis = (struct axis*)malloc(sizeof(struct axis));
@@ -110,27 +117,14 @@ void axes_init(void){
 	*z_axis = *x_axis;
 	z_axis->pulse_pin = BLUE;
 
-	//
-	// Enable the GPIO port that is used for the on-board LED.
-	//
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER1);
-
-	//
-	// Check if the peripheral access is enabled.
-	//
-	while(!SysCtlPeripheralReady(SYSCTL_PERIPH_TIMER1))
-	{
-	}
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER2);
 
 	GPIOPinTypeGPIOOutput(GPIOF_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 
-	//
-	// Configure the 32-bit periodic timer.
-	//
-	TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
+	TimerConfigure(TIMER2_BASE, TIMER_CFG_PERIODIC);
 
-	TimerLoadSet(TIMER1_BASE, TIMER_A, 0xffffffff);
+	TimerLoadSet(TIMER2_BASE, TIMER_A, 0x7fffffff);
 
-	TimerEnable(TIMER1_BASE, TIMER_A);
+	TimerEnable(TIMER2_BASE, TIMER_A);
 }
