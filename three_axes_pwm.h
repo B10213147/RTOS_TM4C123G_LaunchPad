@@ -8,16 +8,22 @@
 #ifndef THREE_AXES_PWM_H_
 #define THREE_AXES_PWM_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+
 struct axis_pwm{
-	unsigned int pulse_pin;
-	unsigned int dir_pin;
+	uint8_t pulse_pin;
+	uint8_t dir_pin;
+	uint8_t pin_state;
+	uint32_t next_ticks;
 	char dir;
 	int total;
 	int remain;
 	int current;
 	int next;
-	char finished;
+	bool working;
 };
+
 
 extern struct axis_pwm *x_axis_pwm;
 extern struct axis_pwm *y_axis_pwm;

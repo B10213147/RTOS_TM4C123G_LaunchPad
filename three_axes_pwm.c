@@ -43,8 +43,12 @@ void start_pwm_X(void){
 	PWMOutputState(PWM1_BASE, PWM_OUT_6_BIT, true);
 }
 
-// Return whether pwm is working or not
-char pwm_X_working(void){
+void pwm_X_GEN(void){
+	if(x_axis_pwm->working == false){
+		start_pwm_X();
+		x_axis_pwm->working = true;
+	}
+
 	int n = TimerValueGet(TIMER2_BASE, TIMER_A) & 0xffff;
 	if(n == 0){
 		// Disable the PWM generator
@@ -52,15 +56,8 @@ char pwm_X_working(void){
 		// Turn off the Output pins
 		PWMOutputState(PWM1_BASE, PWM_OUT_6_BIT, false);
 		TimerDisable(TIMER2_BASE, TIMER_A);
-		for(int i=0; i<1600000; i++);
-		return 'n';
-	}
-	else return 'y';
-}
-
-void pwm_X_GEN(void){
-	if(pwm_X_working() == 'n'){
-		start_pwm_X();
+		x_axis_pwm->working = false;
+//		for(int i=0; i<1600000; i++);
 	}
 }
 
@@ -73,7 +70,7 @@ void axes_pwm_init(void){
 	x_axis_pwm->remain = 0;
 	x_axis_pwm->current = 0;
 	x_axis_pwm->next = 0;
-	x_axis_pwm->finished = 'y';
+	x_axis_pwm->working = false;
 
 	y_axis_pwm = (struct axis_pwm*)malloc(sizeof(struct axis_pwm));
 	z_axis_pwm = (struct axis_pwm*)malloc(sizeof(struct axis_pwm));
@@ -110,7 +107,7 @@ void axes_pwm_init(void){
 	//
 	// Configure the timer captures.
 	//
-	TimerConfigure(TIMER2_BASE, TIMER_CFG_A_CAP_COUNT | TIMER_CFG_B_CAP_COUNT);
+	TimerConfigure(TIMER2_BASE, TIMER_CFG_SPLIT_PAIR | TIMER_CFG_A_CAP_COUNT | TIMER_CFG_B_CAP_COUNT);
 	TimerControlEvent(TIMER2_BASE, TIMER_BOTH, TIMER_EVENT_NEG_EDGE);
 }
 
