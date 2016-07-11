@@ -68,8 +68,8 @@ void position_Modify(struct axis *axis){
 	}while(axis->remain != 0);
 }
 
-float duty = 0.001;
-uint32_t full_Period = 1600000; //unit = ticks/10ms
+float duty = 0.01;
+uint32_t full_Period = 160000; //unit = ticks/10ms
 char pulse_Gen(struct axis *axis){
 	uint32_t period = full_Period / axis->current;	//unit = ticks/cycle
 	uint32_t width_L = period * (1 - duty);
@@ -77,11 +77,10 @@ char pulse_Gen(struct axis *axis){
 
 	if(axis->working == false){
 		axis->next_ticks = TimerValueGet(TIMER2_BASE, TIMER_A) - width_L;
-		if(axis->next_ticks < 0) axis->next_ticks += 0x7fffffff;
 		axis->working = true;
 	}
-	uint32_t n = TimerValueGet(TIMER2_BASE, TIMER_A);
-	if(n <= axis->next_ticks){
+
+	if(TimerValueGet(TIMER2_BASE, TIMER_A) < axis->next_ticks){
 		if(axis->pin_state == 0){
 			axis->next_ticks -= width_H;
 			axis->pin_state = axis->pulse_pin;
@@ -91,10 +90,10 @@ char pulse_Gen(struct axis *axis){
 			axis->pin_state = 0;
 		}
 		GPIOPinWrite(GPIOF_BASE, axis->pulse_pin, axis->pin_state);
-		if(axis->next_ticks < 0) axis->next_ticks += 0x7fffffff;
 		if(axis->pin_state == 0) return 'f';	//falling edge
 		else return 'r';	//rising edge
 	}
+
 	return 0;
 }
 
@@ -124,7 +123,7 @@ void axes_init(void){
 
 	TimerConfigure(TIMER2_BASE, TIMER_CFG_PERIODIC);
 
-	TimerLoadSet(TIMER2_BASE, TIMER_A, 0x7fffffff);
+	TimerLoadSet(TIMER2_BASE, TIMER_A, 0x0fffffff);
 
 	TimerEnable(TIMER2_BASE, TIMER_A);
 }

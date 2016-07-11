@@ -15,7 +15,7 @@ struct axis{
 	uint8_t pulse_pin;
 	uint8_t dir_pin;
 	uint8_t pin_state;
-	int32_t next_ticks;
+	uint32_t next_ticks;
 	char dir;
 	int total;
 	int remain;
