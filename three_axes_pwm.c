@@ -13,6 +13,8 @@
 #include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
 #include "driverlib/pin_map.h"
+#include "driverlib/interrupt.h"
+#include "inc/hw_ints.h"
 
 #define RED		GPIO_PIN_1
 #define BLUE	GPIO_PIN_2
@@ -28,8 +30,7 @@ float duty_pwm = 0.001;
 uint32_t full_Period_pwm = 65000 *3; //unit = ticks/10ms
 void start_pwm_X(void){
 	uint32_t period = full_Period_pwm / x_axis_pwm->current;	//unit = ticks/cycle
-	uint32_t width_L = period * (1 - duty_pwm);
-	uint32_t width_H = period - width_L;
+	uint32_t width_H = period * duty_pwm;
 
 	TimerLoadSet(TIMER2_BASE, TIMER_A, x_axis_pwm->current);
 
@@ -45,21 +46,32 @@ void start_pwm_X(void){
 
 void pwm_X_GEN(void){
 	if(x_axis_pwm->working == false){
+		x_axis_pwm->current = 1 + (x_axis_pwm->current % 10);
 		start_pwm_X();
 		x_axis_pwm->working = true;
 	}
+}
 
-	int n = TimerValueGet(TIMER2_BASE, TIMER_A) & 0xffff;
-	if(n == 0){
+void Timer2_Handler(void){
+	if(TimerIntStatus(TIMER2_BASE, true) & TIMER_CAPA_MATCH){
 		// Disable the PWM generator
 		PWMGenDisable(PWM1_BASE, PWM_GEN_3);
 		// Turn off the Output pins
 		PWMOutputState(PWM1_BASE, PWM_OUT_6_BIT, false);
-		TimerDisable(TIMER2_BASE, TIMER_A);
+		TimerIntClear(TIMER2_BASE, TIMER_CAPA_MATCH);
 		x_axis_pwm->working = false;
-//		for(int i=0; i<1600000; i++);
+	}
+
+	if(TimerIntStatus(TIMER2_BASE, true) & TIMER_CAPB_MATCH){
+		// Disable the PWM generator
+		PWMGenDisable(PWM1_BASE, PWM_GEN_3);
+		// Turn off the Output pins
+		PWMOutputState(PWM1_BASE, PWM_OUT_7_BIT, false);
+		TimerIntClear(TIMER2_BASE, TIMER_CAPB_MATCH);
+		y_axis_pwm->working = false;
 	}
 }
+
 
 void axes_pwm_init(void){
 	x_axis_pwm = (struct axis_pwm*)malloc(sizeof(struct axis_pwm));
@@ -109,5 +121,10 @@ void axes_pwm_init(void){
 	//
 	TimerConfigure(TIMER2_BASE, TIMER_CFG_SPLIT_PAIR | TIMER_CFG_A_CAP_COUNT | TIMER_CFG_B_CAP_COUNT);
 	TimerControlEvent(TIMER2_BASE, TIMER_BOTH, TIMER_EVENT_NEG_EDGE);
+	TimerIntRegister(TIMER2_BASE, TIMER_BOTH, Timer2_Handler);
+	IntPrioritySet(INT_TIMER2A, 0x01);	//set Timer2A to 1 priority
+	IntPrioritySet(INT_TIMER2B, 0x01);	//set Timer2B to 1 priority
+	TimerMatchSet(TIMER2_BASE, TIMER_BOTH, 0);
+	TimerIntEnable(TIMER2_BASE, TIMER_CAPA_MATCH | TIMER_CAPB_MATCH);
 }
 

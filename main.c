@@ -7,8 +7,7 @@
 #include "pulse_train.h"
 #include "keys_driver.h"
 #include "uart_driver.h"
-#include "pwm_polling.h"
-#include "three_axes.h"
+#include "three_axes_pwm.h"
 
 
 void startup(void);
@@ -17,14 +16,12 @@ void print_string(char *string);
 struct pulse_info *green_pulse;
 int main(void) {
 	startup();
-
-	x_axis->total = 51;
-	y_axis->total = -24;
+	axes_pwm_init();
+	x_axis_pwm->current = 1;
 
 	rtos_task_create(keys_driver, 0, 2);
 	rtos_task_create(uart_driver, 0, 3);
-	rtos_task_create(axis_move, x_axis, 10);
-	rtos_task_create(axis_move, y_axis, 10);
+	rtos_task_create(pwm_X_GEN, 0, 1000);
 
 	char temp;
 	while(1){
@@ -44,35 +41,7 @@ int main(void) {
 				break;
 			}
 		}
-
-		if(x_axis->finished == 'y'){
-			if(x_axis->total <= 0){
-				x_axis->dir = 'l';
-				x_axis->remain = -x_axis->total;
-			}
-			else{
-				x_axis->dir = 'r';
-				x_axis->remain = x_axis->total;
-			}
-		}
-
-		if(y_axis->finished == 'y'){
-			if(y_axis->total <= 0){
-				y_axis->dir = 'l';
-				y_axis->remain = -y_axis->total;
-			}
-			else{
-				y_axis->dir = 'r';
-				y_axis->remain = y_axis->total;
-			}
-		}
-
-		if(x_axis->next == 0) x_axis->next = 8;
-//		axis_move(x_axis);
-		if(y_axis->next == 0) y_axis->next = 5;
-//		axis_move(y_axis);
 	}
-
 }
 
 void print_string(char *string){
@@ -98,8 +67,6 @@ void startup(void){
 	//	green_pulse = pulse_train_init();
 
 	uart_driver_init();
-
-	axes_init();
 
 	enable_os();
 }
