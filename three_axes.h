@@ -12,10 +12,8 @@
 #include <stdbool.h>
 
 struct axis{
-	uint8_t pulse_pin;
-	uint8_t dir_pin;
-	uint8_t pin_state;
-	uint32_t next_ticks;
+	unsigned int pulse_pin;
+	unsigned int dir_pin;
 	char dir;
 	int total;
 	int remain;
@@ -30,8 +28,10 @@ extern struct axis *z_axis;
 
 extern void axes_init(void);
 extern void axis_move(struct axis *axis);
-extern char pulse_Gen(struct axis *axis);
+extern void pulse_Gen(struct axis *axis);
 extern void position_Modify(struct axis *axis);
+extern void pwm_X_GEN(void);
+extern void pwm_Y_GEN(void);
 
 
 #endif /* THREE_AXES_H_ */
