@@ -8,8 +8,7 @@
 #ifndef X_AXIS_H_
 #define X_AXIS_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "three_axes.h"
 
 extern void x_axis_Init(void);
 extern void x_axis_Move(int pulses);
