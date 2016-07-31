@@ -7,7 +7,6 @@
 
 #include "z_axis.h"
 #include "TM4C123GH6PM.h"
-#include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pin_map.h"
@@ -24,7 +23,9 @@ void z_axis_Move(int pulses){
 }
 
 void z_axis_Init(void){
-
+	z_axis = (struct axis*)malloc(sizeof(struct axis));
+	*z_axis = *x_axis;
+	z_axis->pulse_pin = BLUE;
 }
 
 void z_pulse_Gen(void){

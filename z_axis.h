@@ -8,8 +8,7 @@
 #ifndef Z_AXIS_H_
 #define Z_AXIS_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "three_axes.h"
 
 extern void z_axis_Init(void);
 extern void z_axis_Move(int pulses);
