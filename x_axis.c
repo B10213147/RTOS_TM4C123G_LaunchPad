@@ -19,7 +19,26 @@ void x_pwm_Start(void);
 void x_timer_End(void);
 
 void x_axis_Move(int pulses){
-	x_axis->current = 1 + (x_axis->current % 10);
+	x_axis->remain += pulses;
+	if(x_axis->next == 0){
+		if(x_axis->remain > 45){
+			if(x_axis->current < 10){
+				x_axis->next = 1 + x_axis->current;
+			}
+			else{
+				x_axis->next = 10;
+			}
+		}
+		if(x_axis->remain <= 45){
+			if(x_axis->current > 0){
+				x_axis->next = x_axis->current - 1;
+			}
+			if(x_axis->next == 0){
+				x_axis->current = 0;
+				x_axis->remain = 200;
+			}
+		}
+	}
 	x_pulse_Gen();
 }
 
@@ -55,8 +74,11 @@ void x_axis_Init(void){
 }
 
 void x_pulse_Gen(void){
-	if(x_axis->working == false){
+	if((x_axis->working == false) && (x_axis->next > 0)){
+		x_axis->current = x_axis->next;
+		x_axis->next = 0;
 		x_pwm_Start();
+		x_axis->remain -= x_axis->current;
 		x_axis->working = true;
 	}
 }
