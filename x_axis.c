@@ -17,6 +17,8 @@
 void x_pulse_Gen(void);
 void x_pwm_Start(void);
 void x_timer_End(void);
+void x_reverse(void);
+void x_set_dir(int state);
 
 struct pulse_Gen_info x_pulse_Gen_info =
 	{0, 0, 0, 0, false, true};
@@ -27,6 +29,7 @@ void x_axis_Move(int pulses){
 		if(x_pulse_Gen_info.total == 0) return;
 		x_pulse_Gen_info.remain = pulses;
 		x_pulse_Gen_info.finished = false;
+		x_set_dir(non_reverse);
 	}
 
 	if(x_pulse_Gen_info.next == 0){
@@ -42,7 +45,7 @@ void x_axis_Move(int pulses){
 					x_pulse_Gen_info.next = 10;
 				}
 			}
-			else{
+			else if(x_pulse_Gen_info.remain <= 45){
 				if(x_pulse_Gen_info.current > 0){
 					// Decelerate
 					x_pulse_Gen_info.next = x_pulse_Gen_info.current - 1;
@@ -57,6 +60,10 @@ void x_axis_Move(int pulses){
 		else{
 
 		}
+
+		if(x_pulse_Gen_info.current == 0 && x_pulse_Gen_info.remain < 0){
+			x_reverse();
+		}
 	}
 	x_pulse_Gen();
 
@@ -65,8 +72,8 @@ void x_axis_Move(int pulses){
 void x_axis_Init(void){
 	x_axis = (struct axis *)malloc(sizeof(struct axis));
 	x_axis->pulse_Gen = &x_pulse_Gen_info;
-	x_axis->dir_pin = BLUE;
-	x_axis->dir = 'r';
+	x_axis->dir_pin = GREEN;
+	x_axis->dir = 'l';
 	x_axis->total = 0;
 	x_axis->remain = 0;
 	x_axis->current = 0;
@@ -90,6 +97,23 @@ void x_axis_Init(void){
 	IntPrioritySet(INT_TIMER2A, 0x01);	//set Timer2A to 1 priority
 	TimerMatchSet(TIMER2_BASE, TIMER_A, 0);
 	TimerIntEnable(TIMER2_BASE, TIMER_CAPA_MATCH);
+}
+
+void x_reverse(void){
+	x_set_dir(reverse);
+	x_pulse_Gen_info.next = 2;
+	x_pulse_Gen_info.remain += 2*2;
+}
+
+void x_set_dir(int state){
+	if(state != reverse){
+		if(x_axis->dir == 'r') GPIOPinWrite(GPIOF_BASE, x_axis->dir_pin, x_axis->dir_pin);
+		else GPIOPinWrite(GPIOF_BASE, x_axis->dir_pin, 0);
+	}
+	else{
+		if(x_axis->dir == 'r') GPIOPinWrite(GPIOF_BASE, x_axis->dir_pin, 0);
+		else GPIOPinWrite(GPIOF_BASE, x_axis->dir_pin, x_axis->dir_pin);
+	}
 }
 
 void x_pulse_Gen(void){

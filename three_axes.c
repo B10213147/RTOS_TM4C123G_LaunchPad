@@ -72,6 +72,7 @@ void axes_init(void){
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM1);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER2);
+	GPIOPinTypeGPIOOutput(GPIOF_BASE, GPIO_PIN_3);
 
 	x_axis_Init();
 	y_axis_Init();
