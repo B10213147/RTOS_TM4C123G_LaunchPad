@@ -18,40 +18,59 @@ void x_pulse_Gen(void);
 void x_pwm_Start(void);
 void x_timer_End(void);
 
+struct pulse_Gen_info x_pulse_Gen_info =
+	{0, 0, 0, 0, false, true};
+
 void x_axis_Move(int pulses){
-	x_axis->remain += pulses;
-	if(x_axis->next == 0){
-		if(x_axis->remain > 45){
-			if(x_axis->current < 10){
-				x_axis->next = 1 + x_axis->current;
+	if(x_pulse_Gen_info.finished == true){
+		x_pulse_Gen_info.total = pulses;
+		if(x_pulse_Gen_info.total == 0) return;
+		x_pulse_Gen_info.remain = pulses;
+		x_pulse_Gen_info.finished = false;
+	}
+
+	if(x_pulse_Gen_info.next == 0){
+		// Acceleration & Deceleration
+		if(x_pulse_Gen_info.total >= 45*2){
+			if(x_pulse_Gen_info.remain > 45){
+				if(x_pulse_Gen_info.current < 10){
+					// Accelerate
+					x_pulse_Gen_info.next = 1 + x_pulse_Gen_info.current;
+				}
+				else{
+					// Constant speed
+					x_pulse_Gen_info.next = 10;
+				}
 			}
 			else{
-				x_axis->next = 10;
+				if(x_pulse_Gen_info.current > 0){
+					// Decelerate
+					x_pulse_Gen_info.next = x_pulse_Gen_info.current - 1;
+				}
+				if(x_pulse_Gen_info.next == 0){
+					x_pulse_Gen_info.current = 0;
+					if(x_pulse_Gen_info.remain != 0) x_pulse_Gen_info.finished = false;
+					else x_pulse_Gen_info.finished = true;
+				}
 			}
 		}
-		if(x_axis->remain <= 45){
-			if(x_axis->current > 0){
-				x_axis->next = x_axis->current - 1;
-			}
-			if(x_axis->next == 0){
-				x_axis->current = 0;
-				x_axis->remain = 200;
-			}
+		else{
+
 		}
 	}
 	x_pulse_Gen();
+
 }
 
 void x_axis_Init(void){
 	x_axis = (struct axis *)malloc(sizeof(struct axis));
-	x_axis->pulse_pin = RED;
+	x_axis->pulse_Gen = &x_pulse_Gen_info;
 	x_axis->dir_pin = BLUE;
 	x_axis->dir = 'r';
 	x_axis->total = 0;
 	x_axis->remain = 0;
 	x_axis->current = 0;
 	x_axis->next = 0;
-	x_axis->working = false;
 
 	//Configure PF1 Pin as PWM
 	GPIOPinConfigure(GPIO_PF1_M1PWM5);
@@ -74,20 +93,20 @@ void x_axis_Init(void){
 }
 
 void x_pulse_Gen(void){
-	if((x_axis->working == false) && (x_axis->next > 0)){
-		x_axis->current = x_axis->next;
-		x_axis->next = 0;
+	if((x_pulse_Gen_info.working == false) && (x_pulse_Gen_info.next > 0)){
+		x_pulse_Gen_info.current = x_pulse_Gen_info.next;
+		x_pulse_Gen_info.next = 0;
 		x_pwm_Start();
-		x_axis->remain -= x_axis->current;
-		x_axis->working = true;
+		x_pulse_Gen_info.remain -= x_pulse_Gen_info.current;
+		x_pulse_Gen_info.working = true;
 	}
 }
 
 void x_pwm_Start(void){
-	uint32_t period = full_Period / x_axis->current;	//unit = ticks/cycle
+	uint32_t period = full_Period / x_pulse_Gen_info.current;	//unit = ticks/cycle
 	uint32_t width_H = period * duty;
 
-	TimerLoadSet(TIMER2_BASE, TIMER_A, x_axis->current);
+	TimerLoadSet(TIMER2_BASE, TIMER_A, x_pulse_Gen_info.current);
 
 	TimerEnable(TIMER2_BASE, TIMER_A);
 
@@ -106,7 +125,7 @@ void x_timer_End(void){
 		// Turn off the Output pins
 		PWMOutputState(PWM1_BASE, PWM_OUT_5_BIT, false);
 		TimerIntClear(TIMER2_BASE, TIMER_CAPA_MATCH);
-		x_axis->working = false;
+		x_pulse_Gen_info.working = false;
 	}
 }
 

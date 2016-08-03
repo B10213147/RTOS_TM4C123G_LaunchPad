@@ -17,12 +17,11 @@ struct pulse_info *green_pulse;
 int main(void) {
 	startup();
 	axes_init();
-	x_axis->current = 1;
 
 	rtos_task_create(keys_driver, 0, 2);
 	rtos_task_create(uart_driver, 0, 3);
-	rtos_task_create(pwm_X_GEN, 0, 1000);
-	rtos_task_create(pwm_Y_GEN, 0, 1000);
+	rtos_task_create(x_axis_Move, 0, 1000);
+//	rtos_task_create(pwm_Y_GEN, 0, 1000);
 
 	char temp;
 	while(1){
@@ -42,6 +41,8 @@ int main(void) {
 				break;
 			}
 		}
+
+		x_axis_Move(200);
 	}
 }
 
