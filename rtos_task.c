@@ -6,21 +6,27 @@
  */
 
 #include "rtos.h"
+#include "inc/hw_memmap.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/timer.h"
+
+void empty_task(void){
+}
 
 struct rtos_task *rtos_running_task;		// Currently running task.
 struct rtos_task *rtos_ready_tasks;			// List of ready to run tasks.
 
-void rtos_task_create(voidfuncptr func, void *arg, int interval){
+void rtos_task_create(voidfuncptr func, void *arg){
 	struct rtos_task *task;
-	disable_os();
 
+	disable_os();
 	task = (struct rtos_task *)malloc(sizeof(struct rtos_task));
-	rtos_task_insert(&rtos_ready_tasks, task);
+	if(rtos_ready_tasks != 0) rtos_task_insert(&rtos_ready_tasks, task);
+	else rtos_ready_tasks = task;
+
 	task->function = func;
 	task->agr = arg;
-	task->interval = interval;
-	task->remain_ticks = interval;
-	task->delete_flag = 0;
+	task->next = 0;
 
 	enable_os();
 }
@@ -33,8 +39,11 @@ void rtos_task_delete(struct rtos_task *task){
 
 //insert a task at the back of list
 void rtos_task_insert(struct rtos_task **list, struct rtos_task *task){
-	task->next = *list;
-	*list = task;
+	struct rtos_task *current;
+	//find the last task in the list
+	for(current = *list; current->next != 0; current = current->next);
+	current->next = task;
+	task->next = 0;
 }
 
 void rtos_task_remove(struct rtos_task **list, struct rtos_task *task){
