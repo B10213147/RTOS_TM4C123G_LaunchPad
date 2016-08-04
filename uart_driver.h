@@ -8,10 +8,12 @@
 #ifndef UART_DRIVER_H_
 #define UART_DRIVER_H_
 
-extern struct rtos_pipe *uart_rx_Fifo;
-extern struct rtos_pipe *uart_tx_Fifo;
-
 extern void uart_driver_init(void);
 extern void uart_driver(void);
+
+extern struct rtos_pipe uart_rx_Fifo;
+extern struct rtos_pipe uart_tx_Fifo;
+
+
 
 #endif /* UART_DRIVER_H_ */

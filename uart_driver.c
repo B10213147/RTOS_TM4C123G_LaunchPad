@@ -12,8 +12,10 @@
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 
-struct rtos_pipe *uart_rx_Fifo;
-struct rtos_pipe *uart_tx_Fifo;
+char rx_data[10];
+char tx_data[10];
+struct rtos_pipe uart_rx_Fifo = {0, 0, 10, rx_data};
+struct rtos_pipe uart_tx_Fifo = {0, 0, 10, tx_data};
 
 void uart_driver(void){
 	char rx_data, tx_data;
@@ -21,12 +23,12 @@ void uart_driver(void){
 	if(UARTCharsAvail(UART0_BASE)){ //there is data in the receive FIFO
 		rx_data = UARTCharGetNonBlocking(UART0_BASE);
 		if(rx_data != -1){
-			rtos_pipe_write(uart_rx_Fifo, &rx_data, 1);
+			rtos_pipe_write(&uart_rx_Fifo, &rx_data, 1);
 		}
 	}
 
 	if(!UARTBusy(UART0_BASE)){ //all transmissions are complete
-		if(rtos_pipe_read(uart_tx_Fifo, &tx_data, 1)){
+		if(rtos_pipe_read(&uart_tx_Fifo, &tx_data, 1)){
 			UARTCharPutNonBlocking(UART0_BASE, tx_data);
 		}
 	}
@@ -48,7 +50,4 @@ void uart_driver_init(void){
 			9600, UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE);
 	UARTFIFOEnable(UART0_BASE);
 	UARTEnable(UART0_BASE);
-
-	uart_rx_Fifo = rtos_pipe_create(10);
-	uart_tx_Fifo = rtos_pipe_create(30);
 }

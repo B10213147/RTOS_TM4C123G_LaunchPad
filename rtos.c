@@ -69,7 +69,8 @@ void rtos_init(uint32_t slice){
 	TimerLoadSet(TIMER0_BASE, TIMER_A, slice_quantum);
 
 	//
-	// Enable the timer.
+	// Enable the timer & timer interrupt.
 	//
+	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 	TimerEnable(TIMER0_BASE, TIMER_A);
 }
