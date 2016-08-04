@@ -18,7 +18,7 @@ const float duty = 0.01;
 const uint32_t full_Period = 65000; //unit = ticks/10ms
 
 void axis_move(struct axis *axis){
-	axis->working = false;
+	//axis->working = false;
 
 	if(axis->remain > 0){
 		if(axis->dir == 'r' || axis->dir == 'u'){
@@ -38,7 +38,7 @@ void axis_move(struct axis *axis){
 	}
 
 	if(axis->remain == 0){
-		axis->working = true;
+		//axis->working = true;
 		axis->next = 0;
 		GPIOPinWrite(GPIOF_BASE, axis->dir_pin, 0);
 	}
@@ -72,6 +72,7 @@ void axes_init(void){
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM1);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER2);
+	GPIOPinTypeGPIOOutput(GPIOF_BASE, GPIO_PIN_3);
 
 	x_axis_Init();
 	y_axis_Init();

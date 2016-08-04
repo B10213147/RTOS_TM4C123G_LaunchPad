@@ -18,16 +18,26 @@
 #define RED		GPIO_PIN_1
 #define BLUE	GPIO_PIN_2
 #define GREEN	GPIO_PIN_3
+#define non_reverse	0
+#define reverse	1
+
+struct pulse_Gen_info{
+	int total;
+	int remain;
+	int current;
+	int next;
+	bool working;
+	bool finished;
+};
 
 struct axis{
-	uint8_t pulse_pin;
+	struct pulse_Gen_info *pulse_Gen;
 	uint8_t dir_pin;
 	char dir;
 	int total;
 	int remain;
 	int current;
 	int next;
-	bool working;
 };
 
 extern void axes_init(void);
