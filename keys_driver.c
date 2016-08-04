@@ -12,8 +12,7 @@
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 
-char keys[10];
-struct rtos_pipe keys_Fifo = {0, 0, 10, keys};
+struct rtos_pipe *keys_Fifo;
 
 int32_t keys_last_state = 0;
 void keys_driver(void){
@@ -21,12 +20,12 @@ void keys_driver(void){
 	char data;
 
 	if((keys_state & GPIO_PIN_0) != 0 && (keys_last_state & GPIO_PIN_0) == 0){
-		data = '5';
-		rtos_pipe_write(&keys_Fifo, &data, 1);
+		data = 'R';
+		rtos_pipe_write(keys_Fifo, &data, 1);
 	}
 	if((keys_state & GPIO_PIN_4) != 0 && (keys_last_state & GPIO_PIN_4) == 0){
-		data = '9';
-		rtos_pipe_write(&keys_Fifo, &data, 1);
+		data = 'L';
+		rtos_pipe_write(keys_Fifo, &data, 1);
 	}
 
 	keys_last_state = keys_state;
@@ -56,6 +55,8 @@ void keys_driver_init(void){
 	GPIOPinTypeGPIOInput(GPIOF_BASE, GPIO_PIN_0 | GPIO_PIN_4);
 	GPIOPadConfigSet(GPIOF_BASE, GPIO_PIN_0 | GPIO_PIN_4,
 			GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+
+	keys_Fifo = rtos_pipe_create(10);
 }
 
 

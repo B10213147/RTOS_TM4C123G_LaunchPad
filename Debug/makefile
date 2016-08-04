@@ -19,6 +19,7 @@ ORDERED_OBJS += \
 "./rtos_task.o" \
 "./system_TM4C123.o" \
 "./tm4c123gh6pm_startup_ccs_gcc.o" \
+"./uart_driver.o" \
 -Wl,-T"../tm4c123gh6pm.lds" \
 $(GEN_CMDS__FLAG) \
 -Wl,--start-group \
@@ -165,8 +166,8 @@ rtos.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)$(BIN_OUTPUTS__QUOTED)
-	-$(RM) "keys_driver.d" "main.d" "pulse_train.d" "rtos.d" "rtos_pipe.d" "rtos_sched.d" "rtos_task.d" "system_TM4C123.d" "tm4c123gh6pm_startup_ccs_gcc.d" 
-	-$(RM) "keys_driver.o" "main.o" "pulse_train.o" "rtos.o" "rtos_pipe.o" "rtos_sched.o" "rtos_task.o" "system_TM4C123.o" "tm4c123gh6pm_startup_ccs_gcc.o" 
+	-$(RM) "keys_driver.d" "main.d" "pulse_train.d" "rtos.d" "rtos_pipe.d" "rtos_sched.d" "rtos_task.d" "system_TM4C123.d" "tm4c123gh6pm_startup_ccs_gcc.d" "uart_driver.d" 
+	-$(RM) "keys_driver.o" "main.o" "pulse_train.o" "rtos.o" "rtos_pipe.o" "rtos_sched.o" "rtos_task.o" "system_TM4C123.o" "tm4c123gh6pm_startup_ccs_gcc.o" "uart_driver.o" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
