@@ -15,7 +15,8 @@ C_SRCS += \
 ../rtos_sched.c \
 ../rtos_task.c \
 ../system_TM4C123.c \
-../tm4c123gh6pm_startup_ccs_gcc.c 
+../tm4c123gh6pm_startup_ccs_gcc.c \
+../uart_driver.c 
 
 OBJS += \
 ./keys_driver.o \
@@ -26,7 +27,8 @@ OBJS += \
 ./rtos_sched.o \
 ./rtos_task.o \
 ./system_TM4C123.o \
-./tm4c123gh6pm_startup_ccs_gcc.o 
+./tm4c123gh6pm_startup_ccs_gcc.o \
+./uart_driver.o 
 
 C_DEPS += \
 ./keys_driver.d \
@@ -37,7 +39,8 @@ C_DEPS += \
 ./rtos_sched.d \
 ./rtos_task.d \
 ./system_TM4C123.d \
-./tm4c123gh6pm_startup_ccs_gcc.d 
+./tm4c123gh6pm_startup_ccs_gcc.d \
+./uart_driver.d 
 
 C_DEPS__QUOTED += \
 "keys_driver.d" \
@@ -48,7 +51,8 @@ C_DEPS__QUOTED += \
 "rtos_sched.d" \
 "rtos_task.d" \
 "system_TM4C123.d" \
-"tm4c123gh6pm_startup_ccs_gcc.d" 
+"tm4c123gh6pm_startup_ccs_gcc.d" \
+"uart_driver.d" 
 
 OBJS__QUOTED += \
 "keys_driver.o" \
@@ -59,7 +63,8 @@ OBJS__QUOTED += \
 "rtos_sched.o" \
 "rtos_task.o" \
 "system_TM4C123.o" \
-"tm4c123gh6pm_startup_ccs_gcc.o" 
+"tm4c123gh6pm_startup_ccs_gcc.o" \
+"uart_driver.o" 
 
 C_SRCS__QUOTED += \
 "../keys_driver.c" \
@@ -70,6 +75,7 @@ C_SRCS__QUOTED += \
 "../rtos_sched.c" \
 "../rtos_task.c" \
 "../system_TM4C123.c" \
-"../tm4c123gh6pm_startup_ccs_gcc.c" 
+"../tm4c123gh6pm_startup_ccs_gcc.c" \
+"../uart_driver.c" 
 
 
