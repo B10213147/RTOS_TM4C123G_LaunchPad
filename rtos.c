@@ -12,18 +12,22 @@
 #include "driverlib/timer.h"
 #include "driverlib/interrupt.h"
 
+void rtos_SysTick_irq(void);
+
 // System variables
 uint32_t slice_quantum;
 int rtos_recursive_counter;
 
 void enable_os(void){
 	rtos_recursive_counter++;
-	if(rtos_recursive_counter > 0) TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+//	if(rtos_recursive_counter > 0) TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	if(rtos_recursive_counter > 0) IntEnable(FAULT_SYSTICK);
 }
 
 void disable_os(void){
 	IntMasterDisable();
-	TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+//	TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	IntDisable(FAULT_SYSTICK);
 	rtos_recursive_counter--;
 	IntMasterEnable();
 }
@@ -31,6 +35,15 @@ void disable_os(void){
 // Real time operating system core
 void rtos_Timer0_irq(void){
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	rtos_recursive_counter--;
+	IntPriorityMaskSet(0x00);	//0 means no effect
+
+	rtos_sched();
+
+	IntPriorityMaskSet(0x20);	//only looks at the upper 3 bits
+	enable_os();
+}
+void rtos_SysTick_irq(void){
 	rtos_recursive_counter--;
 	IntPriorityMaskSet(0x00);	//0 means no effect
 
@@ -60,16 +73,19 @@ void rtos_init(uint32_t slice){
 	{
 	}
 
-	//
-	// Configure the 32-bit periodic timer.
-	//
-	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
-	TimerIntRegister(TIMER0_BASE, TIMER_A, rtos_Timer0_irq);
-	IntPrioritySet(INT_TIMER0A, 0x00);	//set Timer0A to the highest priority
-	TimerLoadSet(TIMER0_BASE, TIMER_A, slice_quantum);
+//	//
+//	// Configure the 32-bit periodic timer.
+//	//
+//	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC);
+//	TimerIntRegister(TIMER0_BASE, TIMER_A, rtos_Timer0_irq);
+//	IntPrioritySet(INT_TIMER0A, 0x00);	//set Timer0A to the highest priority
+//	TimerLoadSet(TIMER0_BASE, TIMER_A, slice_quantum);
+//
+//	//
+//	// Enable the timer.
+//	//
+//	TimerEnable(TIMER0_BASE, TIMER_A);
 
-	//
-	// Enable the timer.
-	//
-	TimerEnable(TIMER0_BASE, TIMER_A);
+	IntRegister(FAULT_SYSTICK, rtos_SysTick_irq);
+	while(SysTick_Config(slice_quantum));
 }
