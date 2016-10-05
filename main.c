@@ -8,7 +8,6 @@
 #include "keys_driver.h"
 #include "uart_driver.h"
 
-
 void startup(void);
 void print_string(char *string);
 
